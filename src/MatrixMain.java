@@ -1,14 +1,15 @@
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
-@SuppressWarnings({"unused", "UnusedAssignment"})
+@SuppressWarnings({"unused"})
 public class MatrixMain {
     public static void main(String[] args) {
-        if (args.length < 1)
-            System.out.println("Usage: matrix <input file path> [output file path (not implemented yet]");
-        String inputFilePath, outputFilePath;
+        if (args.length < 1) {
+            System.out.println("Usage: matrix <input file path> [output file path]");
+            return;
+        }
+        String inputFilePath, outputFilePath = null;
         inputFilePath = getAbsolutePath(args[0]);
         if (args.length > 1) outputFilePath = getAbsolutePath(args[1]);
-        System.out.println(inputFilePath);
         try {
             Matrix matrix = new Matrix(inputFilePath);
             matrix.print();
@@ -16,8 +17,8 @@ public class MatrixMain {
             matrix.simpleInsertSort();
             matrix.print();
             System.out.println();
-
-        } catch (FileNotFoundException e) {
+            if (outputFilePath != null) matrix.printToFile(outputFilePath);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
