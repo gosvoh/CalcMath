@@ -1,46 +1,46 @@
+package matrix;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("FieldCanBeLocal")
+/** Класс матрицы. */
+@SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
-    /**
-     * Сама матрица для отображения
-     */
-    private double[][] matrix;
-    /**
-     * Размерность матрицы, где n - это высота, а m - длина
-     */
-    private int n, m;
+    /** Сама матрица для отображения. */
+    private double[][] matrix = null;
+    /** Размерность матрицы, высота. */
+    private int        n;
+    /** Размерность матрицы, длина. */
+    private int        m;
 
     /**
-     * Конструктор объекта матрицы
+     * Конструктор объекта матрицы.
      *
      * @param inputFilePath путь к файлу с матрицей
-     * @throws FileNotFoundException выбрасывается в том случае, если файл не был найден
+     *
+     * @throws FileNotFoundException выбрасывается в том случае,
+     *                               если файл не был найден
      */
-    public Matrix(String inputFilePath) throws FileNotFoundException {
+    public Matrix(final String inputFilePath) throws FileNotFoundException {
         this.init(inputFilePath);
     }
 
     /**
-     * Метод инициализации элементов матрицы
+     * Метод инициализации элементов матрицы.
      *
      * @param n высота матрицы
      * @param m длина матрицы
      */
-    public void create(int n, int m) {
+    public void create(final int n, final int m) {
         matrix = new double[n][];
         for (int i = 0; i < n; i++) matrix[i] = new double[m];
     }
 
-    /**
-     * Вывести матрицу на экран
-     */
+    /** Вывести матрицу на экран. */
     public void print() {
         for (double[] doubles : matrix) {
             for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
@@ -50,13 +50,16 @@ public class Matrix {
 
     /**
      * Заполнение матрицы из файла.
-     * Сначала считываем первую строку, в которой содержатся параметры матрицы (высота и длина),
-     * потом счиываем каждую последующую строку, разделяем её на элементы и вносим в массив.
+     * Сначала считываем первую строку, в которой содержатся параметры
+     * матрицы (высота и длина), потом считываем каждую последующую строку,
+     * разделяем её на элементы и вносим в массив.
      *
      * @param path путь к файлу с матрицей
-     * @throws FileNotFoundException выбрасывается в том случае, если файл не был найден
+     *
+     * @throws FileNotFoundException выбрасывается в том случае,
+     *                               если файл не был найден
      */
-    public void init(String path) throws FileNotFoundException {
+    public void init(final String path) throws FileNotFoundException {
         File inFile = new File(path);
         Scanner scanner = new Scanner(inFile);
         Pattern pattern = Pattern.compile("[ \t]+");
@@ -78,9 +81,7 @@ public class Matrix {
         scanner.close();
     }
 
-    /**
-     * Метод сортировки, путём простой вставки
-     */
+    /** Метод сортировки, путём простой вставки. */
     public void simpleInsertSort() {
         double[] tmpLine;
         double tmpSum;
@@ -104,45 +105,53 @@ public class Matrix {
             lineSums[j] = tmpSum;
         }
 
-        System.out.println(Arrays.toString(lineSums));
         matrix = transposeMatrix(matrix);
     }
 
     /**
-     * Получить сумму элементов указанной строки
+     * Получить сумму элементов указанной строки.
      *
      * @param lineNum номер строки для подсчёта суммы
+     *
      * @return сумма элементов строки
      */
-    private double getLineSum(int lineNum) {
+    private double getLineSum(final int lineNum) {
         double ret = 0;
         for (int i = 0; i < matrix[lineNum].length; i++) ret += matrix[lineNum][i];
         return ret;
     }
 
     /**
-     * Транспонирование матрицы
+     * Транспонирование матрицы.
      *
      * @param matrix исходная матрица
+     *
      * @return транспонированная матрица
      */
-    public double[][] transposeMatrix(double[][] matrix) {
-        int n = matrix.length, m = matrix[0].length;
+    public double[][] transposeMatrix(final double[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+        boolean isSquare = n == m;
         double[][] newMatrix = new double[m][];
         for (int i = 0; i < m; i++) {
             newMatrix[i] = new double[n];
-            for (int j = 0; j < n; j++) newMatrix[i][j] = matrix[j][i];
+            for (int j = 0; j < n; j++) {
+                if (isSquare || (i == 0 && j == 0)) continue;
+                newMatrix[i][j] = matrix[j][i];
+            }
         }
         return newMatrix;
     }
 
     /**
-     * Вывести матрицу в файл
+     * Вывести матрицу в файл.
      *
      * @param outputFilePath путь до файла для вывода матрицы
-     * @throws IOException выбрасывается в том случае, если нет доступа к записи в указанный файл
+     *
+     * @throws IOException выбрасывается в том случае,
+     *                     если нет доступа к записи в указанный файл
      */
-    public void printToFile(String outputFilePath) throws IOException {
+    public void printToFile(final String outputFilePath) throws IOException {
         File outputFile = new File(outputFilePath);
         FileWriter fileWriter = new FileWriter(outputFile);
         fileWriter.write(matrix.length + " " + matrix[0].length + "\n");
