@@ -1,13 +1,25 @@
+package matrix;
+
 import java.io.IOException;
 
-@SuppressWarnings({"unused"})
+/**
+ * Класс запуска первой лабораторной
+ * по предмету "Вычислительная математика".
+ */
+@SuppressWarnings({"unused", "CheckStyle"})
 public class MatrixMain {
-    public static void main(String[] args) {
+    /**
+     * Точка входа в программу.
+     *
+     * @param args аргументы командной строки
+     */
+    public static void main(final String[] args) {
         if (args.length < 1) {
             System.out.println("Usage: matrix <input file path> [output file path]");
             return;
         }
-        String inputFilePath, outputFilePath = null;
+        String inputFilePath;
+        String outputFilePath = null;
         inputFilePath = getAbsolutePath(args[0]);
         if (args.length > 1) outputFilePath = getAbsolutePath(args[1]);
         try {
@@ -25,10 +37,12 @@ public class MatrixMain {
 
     /**
      * Получить абсолютный путь к указанному файлу или директории в виде строки.
-     * Если путь начинается с '/' или с '\', то он считается абсолютным и возвращается неизменным,
-     * в противном случае он считается относительным для текущей рабочей директории.
+     * Если путь начинается с '/' или с '\', то он считается абсолютным и
+     * возвращается неизменным, в противном случае он считается относительным
+     * для текущей рабочей директории.
      *
      * @param path путь для парса
+     *
      * @return абсолютный путь
      */
     private static String getAbsolutePath(String path) {
