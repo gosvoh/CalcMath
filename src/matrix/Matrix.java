@@ -136,7 +136,7 @@ public class Matrix {
         for (int i = 0; i < m; i++) {
             newMatrix[i] = new double[n];
             for (int j = 0; j < n; j++) {
-                if (isSquare || (i == 0 && j == 0)) continue;
+                if (isSquare) continue;
                 newMatrix[i][j] = matrix[j][i];
             }
         }
