@@ -83,27 +83,36 @@ public class Matrix {
 
     /** Метод сортировки, путём простой вставки. */
     public void simpleInsertSort() {
+        double[][] transposedMatrix = new double[m][n];
+        if (n == m) {
+            transposeMatrix();
+            sort(matrix);
+            transposeMatrix();
+        } else {
+            transposeMatrix(matrix, transposedMatrix);
+            sort(transposedMatrix);
+            transposeMatrix(transposedMatrix, matrix);
+        }
+    }
+
+    private void sort(double[][] matrix) {
         double[] tmpLine;
         double tmpSum;
-        double[][] transposedMatrix = new double[m][n];
-        transposeMatrix(matrix, transposedMatrix);
         double[] lineSums = getLinesSums(matrix);
 
-        for (int i = 1; i < m; i++) {
-            tmpLine = transposedMatrix[i];
+        for (int i = 1; i < matrix.length; i++) {
+            tmpLine = matrix[i];
             tmpSum = lineSums[i];
 
             int j = i;
             while (j > 0 && tmpSum < lineSums[j - 1]) {
-                transposedMatrix[j] = transposedMatrix[j - 1];
+                matrix[j] = matrix[j - 1];
                 lineSums[j] = lineSums[j - 1];
                 j--;
             }
-            transposedMatrix[j] = tmpLine;
+            matrix[j] = tmpLine;
             lineSums[j] = tmpSum;
         }
-
-        transposeMatrix(transposedMatrix, matrix);
     }
 
     /**
@@ -114,35 +123,30 @@ public class Matrix {
      * @return массив сумм элементов строки
      */
     private double[] getLinesSums(final double[][] matrix) {
-        double[] ret = new double[matrix[0].length];
-        for (double[] line : matrix) {
-            for (int i = 0; i < line.length; i++) ret[i] += line[i];
-        }
+        double[] ret = new double[matrix.length];
+        for (int i = 0; i < matrix.length; i++) for (int j = 0; j < matrix[i].length; j++) ret[i] += matrix[i][j];
         return ret;
     }
 
+    /** Транспонирование квадратной матрицы */
+    private void transposeMatrix() {
+        for (int i = 0; i < matrix.length; i++)
+            for (int j = i; j < matrix.length; j++) {
+                double tmp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = tmp;
+            }
+    }
+
     /**
-     * Транспонирование матрицы.
+     * Транспонирование не квадратной матрицы матрицы.
      *
      * @param matrix исходная матрица
      * @param transposedMatrix транспонированная матрица
      */
     private void transposeMatrix(double[][] matrix, double[][] transposedMatrix) {
-        if (matrix.length == matrix[0].length) transposeSquareMatrix(matrix, transposedMatrix, matrix.length);
-        else transposeNonSquareMatrix(matrix, transposedMatrix, matrix.length, matrix[0].length);
-    }
-
-    private void transposeSquareMatrix(double[][] matrix, double[][] transposedMatrix, int size) {
-        for (int i = 0; i < size; i++)
-            for (int j = i; j < size; j++) {
-                transposedMatrix[j][i] = matrix[i][j];
-                transposedMatrix[i][j] = matrix[j][i];
-            }
-    }
-
-    private void transposeNonSquareMatrix(double[][] matrix, double[][] transposedMatrix, int height, int length) {
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < length; j++) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
                 transposedMatrix[j][i] = matrix[i][j];
             }
         }
