@@ -125,16 +125,25 @@ public class Matrix {
      * Транспонирование матрицы.
      *
      * @param matrix исходная матрица
+     * @param transposedMatrix транспонированная матрица
      */
     private void transposeMatrix(double[][] matrix, double[][] transposedMatrix) {
-        int n = matrix.length;
-        int m = matrix[0].length;
-        boolean isSquare = n == m;
-        for (int i = 0; i < m; i++) {
-            transposedMatrix[i] = new double[n];
-            for (int j = 0; j < n; j++) {
-                if (isSquare) continue;
+        if (matrix.length == matrix[0].length) transposeSquareMatrix(matrix, transposedMatrix, matrix.length);
+        else transposeNonSquareMatrix(matrix, transposedMatrix, matrix.length, matrix[0].length);
+    }
+
+    private void transposeSquareMatrix(double[][] matrix, double[][] transposedMatrix, int size) {
+        for (int i = 0; i < size; i++)
+            for (int j = i; j < size; j++) {
+                transposedMatrix[j][i] = matrix[i][j];
                 transposedMatrix[i][j] = matrix[j][i];
+            }
+    }
+
+    private void transposeNonSquareMatrix(double[][] matrix, double[][] transposedMatrix, int height, int length) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < length; j++) {
+                transposedMatrix[j][i] = matrix[i][j];
             }
         }
     }
