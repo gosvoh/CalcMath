@@ -89,8 +89,7 @@ public class Matrix {
         transposeMatrix(matrix, transposedMatrix);
         double[] lineSums = getLinesSums(matrix);
 
-        for (int i = 0; i < m; i++) {
-            if (i == 0) continue;
+        for (int i = 1; i < m; i++) {
             tmpLine = transposedMatrix[i];
             tmpSum = lineSums[i];
 
