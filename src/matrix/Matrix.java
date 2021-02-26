@@ -85,39 +85,40 @@ public class Matrix {
     public void simpleInsertSort() {
         double[] tmpLine;
         double tmpSum;
-        double[] lineSums = new double[m];
-
-        matrix = transposeMatrix(matrix);
+        double[][] transposedMatrix = new double[m][n];
+        transposeMatrix(matrix, transposedMatrix);
+        double[] lineSums = getLinesSums(matrix);
 
         for (int i = 0; i < m; i++) {
-            lineSums[i] = getLineSum(i);
             if (i == 0) continue;
-            tmpLine = matrix[i];
+            tmpLine = transposedMatrix[i];
             tmpSum = lineSums[i];
 
             int j = i;
             while (j > 0 && tmpSum < lineSums[j - 1]) {
-                matrix[j] = matrix[j - 1];
+                transposedMatrix[j] = transposedMatrix[j - 1];
                 lineSums[j] = lineSums[j - 1];
                 j--;
             }
-            matrix[j] = tmpLine;
+            transposedMatrix[j] = tmpLine;
             lineSums[j] = tmpSum;
         }
 
-        matrix = transposeMatrix(matrix);
+        transposeMatrix(transposedMatrix, matrix);
     }
 
     /**
      * Получить сумму элементов указанной строки.
      *
-     * @param lineNum номер строки для подсчёта суммы
+     * @param matrix матрица для подсчёта сумм столбцов
      *
-     * @return сумма элементов строки
+     * @return массив сумм элементов строки
      */
-    private double getLineSum(final int lineNum) {
-        double ret = 0;
-        for (int i = 0; i < matrix[lineNum].length; i++) ret += matrix[lineNum][i];
+    private double[] getLinesSums(final double[][] matrix) {
+        double[] ret = new double[matrix[0].length];
+        for (double[] line : matrix) {
+            for (int i = 0; i < line.length; i++) ret[i] += line[i];
+        }
         return ret;
     }
 
@@ -125,22 +126,18 @@ public class Matrix {
      * Транспонирование матрицы.
      *
      * @param matrix исходная матрица
-     *
-     * @return транспонированная матрица
      */
-    public double[][] transposeMatrix(final double[][] matrix) {
+    private void transposeMatrix(double[][] matrix, double[][] transposedMatrix) {
         int n = matrix.length;
         int m = matrix[0].length;
         boolean isSquare = n == m;
-        double[][] newMatrix = new double[m][];
         for (int i = 0; i < m; i++) {
-            newMatrix[i] = new double[n];
+            transposedMatrix[i] = new double[n];
             for (int j = 0; j < n; j++) {
                 if (isSquare) continue;
-                newMatrix[i][j] = matrix[j][i];
+                transposedMatrix[i][j] = matrix[j][i];
             }
         }
-        return newMatrix;
     }
 
     /**
