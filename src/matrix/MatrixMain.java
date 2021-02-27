@@ -48,7 +48,7 @@ public class MatrixMain {
      */
     private static String getAbsolutePath(String path) {
         path = path.replaceAll("[\"]+", "").replaceAll("/", "\\");
-        if (path.startsWith("/") || path.startsWith("\\") || Pattern.matches("[a-zA-Z]:", path.substring(0, 2)))
+        if (path.startsWith("\\") || Pattern.matches("[a-zA-Z]:", path.substring(0, 2)))
             return path;
         else if (path.startsWith("~")) return System.getProperty("user.home") + path.substring(1);
         else return System.getProperty("user.dir") + "\\" + path;
