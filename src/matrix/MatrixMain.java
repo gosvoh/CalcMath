@@ -47,10 +47,12 @@ public class MatrixMain {
      * @return абсолютный путь
      */
     private static String getAbsolutePath(String path) {
-        path = path.replaceAll("[\"]+", "").replaceAll("/", "\\");
-        if (path.startsWith("\\") || Pattern.matches("[a-zA-Z]:", path.substring(0, 2)))
+        path = path.contains("\\") ? path.replaceAll("\\\\", "/") : path;
+        if (path.startsWith("/") || Pattern.matches("[a-zA-Z]:", path.substring(0, 2)))
             return path;
-        else if (path.startsWith("~")) return System.getProperty("user.home") + path.substring(1);
-        else return System.getProperty("user.dir") + "\\" + path;
+        else if (path.startsWith("~")) {
+            String homePath = System.getProperty("user.home");
+            return homePath.endsWith("/") ? homePath + path.substring(1) : homePath + "/" + path.substring(1);
+        } else return System.getProperty("user.dir") + "\\" + path;
     }
 }
