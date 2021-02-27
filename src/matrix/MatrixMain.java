@@ -53,6 +53,6 @@ public class MatrixMain {
         else if (path.startsWith("~")) {
             String homePath = System.getProperty("user.home");
             return homePath.endsWith("/") ? homePath + path.substring(1) : homePath + "/" + path.substring(1);
-        } else return System.getProperty("user.dir") + "\\" + path;
+        } else return System.getProperty("user.dir") + "/" + path;
     }
 }
