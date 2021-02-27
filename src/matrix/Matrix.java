@@ -83,18 +83,23 @@ public class Matrix {
 
     /** Метод сортировки, путём простой вставки. */
     public void simpleInsertSort() {
-        double[][] transposedMatrix = new double[m][n];
         if (n == m) {
             transposeMatrix();
             sort(matrix);
             transposeMatrix();
         } else {
+            double[][] transposedMatrix = new double[m][n];
             transposeMatrix(matrix, transposedMatrix);
             sort(transposedMatrix);
             transposeMatrix(transposedMatrix, matrix);
         }
     }
 
+    /**
+     * Метод, где происходит реальная сортировка
+     *
+     * @param matrix матрица, которую нужно отсортировать
+     */
     private void sort(double[][] matrix) {
         double[] tmpLine;
         double tmpSum;
@@ -141,7 +146,7 @@ public class Matrix {
     /**
      * Транспонирование не квадратной матрицы матрицы.
      *
-     * @param matrix исходная матрица
+     * @param matrix           исходная матрица
      * @param transposedMatrix транспонированная матрица
      */
     private void transposeMatrix(double[][] matrix, double[][] transposedMatrix) {
