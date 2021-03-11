@@ -8,11 +8,11 @@
 class Matrix {
  private:
   /** Сама матрица для отображения. */
-  double **matrix = nullptr;
+  double **_matrix;
   /** Размерность матрицы, высота. */
-  int n;
+  int size_y_;
   /** Размерность матрицы, длина. */
-  int m;
+  int size_x_;
 
   /**
    * Получить сумму элементов указанной строки.
@@ -21,15 +21,15 @@ class Matrix {
    *
    * @return массив сумм элементов строки
    */
-  void getLinesSums(double **matrix, double *buf, int sizeX, int sizeY);
+  static void getLinesSums(double **matrix, double *buf, int sizeX, int sizeY);
 
   /**
    * Метод инициализации элементов матрицы.
    *
-   * @param n высота матрицы
-   * @param m длина матрицы
+   * @param sizeX высота матрицы
+   * @param sizeY длина матрицы
    */
-  void create(const int n, const int m);
+  void create(int sizeX, int sizeY);
 
   /**
    * Заполнение матрицы из файла.
@@ -44,7 +44,7 @@ class Matrix {
    */
   void init(const char *path);
 
-  /** Транспонирование квадратной матрицы */
+  /** Транспонирование квадратной матрицы. */
   void transposeMatrix();
 
   /**
@@ -52,17 +52,26 @@ class Matrix {
    *
    * @param matrix           исходная матрица
    * @param transposedMatrix транспонированная матрица
-   * @param sizeX ширина     исходной матрицы
-   * @param sizeY высота     исходной матрицы
+   * @param mainSizeX ширина     исходной матрицы
+   * @param mainSizeY высота     исходной матрицы
    */
-  void transposeMatrix(double **matrix, double **transposedMatrix, int sizeX, int sizeY);
+  static void transposeMatrix(double **matrix, double **transposedMatrix, int mainSizeX, int mainSizeY);
 
   /**
-   * Метод, где происходит реальная сортировка
+   * Метод, где происходит реальная сортировка.
    *
    * @param matrix матрица, которую нужно отсортировать
    */
-  void sort(double **matrix, int sizeX, int sizeY);
+  static void sort(double **matrix, int sizeX, int sizeY);
+
+  /**
+   * Вывести на экран указанную матрицу.
+   *
+   * @param matrix матрица для вывода на экран
+   * @param sizeX ширина матрицы
+   * @param sizeY высота матрицы
+   */
+  static void print(double **matrix, int sizeX, int sizeY);
 
  public:
   /**
@@ -75,7 +84,7 @@ class Matrix {
    */
   explicit Matrix(const char *inputFilePath);
 
-  /** Деструктор матрицы */
+  /** Деструктор матрицы. */
   ~Matrix();
 
   /** Вывести матрицу на экран. */

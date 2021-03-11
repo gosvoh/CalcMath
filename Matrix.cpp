@@ -5,18 +5,16 @@
 #include "includes.h"
 #include "Matrix.h"
 
-Matrix::Matrix(const char *inputFilePath) {
+Matrix::Matrix(const char *inputFilePath) { // NOLINT(cppcoreguidelines-pro-type-member-init)
   init(inputFilePath);
 }
 
 Matrix::~Matrix() {
-  if (matrix == nullptr) return;
-  printf("Deleting matrix...\n");
-  for (int i = 0; i < n; ++i) {
-	delete[] matrix[i];
+  if (!_matrix) return;
+  for (int i = 0; i < size_y_; ++i) {
+	delete[] _matrix[i];
   }
-  delete[] matrix;
-  printf("Matrix deleted!");
+  delete[] _matrix;
 }
 
 void Matrix::getLinesSums(double **matrix, double *buf, int sizeX, int sizeY) {
@@ -25,33 +23,50 @@ void Matrix::getLinesSums(double **matrix, double *buf, int sizeX, int sizeY) {
 
 void Matrix::init(const char *path) {
   FILE *iFile;
-  char *sizes;
-  char *newSizes;
+  char *line;
+  const int arraySize = 1024;
+  char *linePointer;
+  const char *delim = " \t";
 
   iFile = fopen(path, "r");
-  sizes = new char[64];
-  fgets(sizes, 64, iFile);
-  newSizes = strtok(sizes, " \t");
-  n = strtol(newSizes, NULL, 10);
-  newSizes = strtok(NULL, " \t");
-  m = strtol(newSizes, NULL, 10);
-  create(n, m);
-  
-  delete[] sizes;
+  line = new char[arraySize];
+  fgets(line, arraySize, iFile);
+  linePointer = strtok(line, delim);
+  size_y_ = (int)strtol(linePointer, nullptr, 10);
+  linePointer = strtok(nullptr, delim);
+  size_x_ = (int)strtol(linePointer, nullptr, 10);
+  create(size_x_, size_y_);
+  for (int i = 0; i < size_y_; ++i) {
+	fgets(line, arraySize, iFile);
+	for (int j = 0; j < size_x_; ++j) {
+	  if (j == 0) linePointer = strtok(line, delim);
+	  else linePointer = strtok(nullptr, delim);
+	  _matrix[i][j] = strtod(linePointer, nullptr);
+	}
+  }
+
+  delete[] line;
   fclose(iFile);
 }
 
-void Matrix::create(const int n, const int m) {
-  matrix = new double *[n];
-  for (int i = 0; i < n; ++i) {
-	matrix[i] = new double[m];
+void Matrix::create(const int sizeX, const int sizeY) {
+  _matrix = new double *[sizeY];
+  for (int i = 0; i < sizeY; ++i) {
+	_matrix[i] = new double[sizeX];
   }
-  printf("Matrix created!\n");
 }
 
 void Matrix::print() {
-  for (int i = 0; i < n; ++i) {
-	for (int j = 0; j < m; ++j) {
+  print(_matrix, size_x_, size_y_);
+}
+
+void Matrix::print(double **matrix, int sizeX, int sizeY) {
+  if (matrix == nullptr) {
+	printf("Matrix is NULL\n");
+	return;
+  }
+  for (int i = 0; i < sizeY; ++i) {
+	for (int j = 0; j < sizeX; ++j) {
 	  printf("%15.6E", matrix[i][j]);
 	}
 	printf("\n");
@@ -59,17 +74,21 @@ void Matrix::print() {
 }
 
 void Matrix::simpleInsertSort() {
-  if (n == m) {
+  if (size_y_ == size_x_) {
 	transposeMatrix();
-	sort(matrix, n, m);
+	sort(_matrix, size_y_, size_x_);
 	transposeMatrix();
   } else {
-	auto **transposedMatrix = new double *[m];
-	for (int i = 0; i < m; ++i) transposedMatrix[i] = new double[n];
-	transposeMatrix(matrix, transposedMatrix, 0, 0);
-	sort(transposedMatrix, n, m);
-	transposeMatrix(transposedMatrix, matrix, 0, 0);
-	for (int i = 0; i < m; ++i) delete[] transposedMatrix[i];
+	auto **transposedMatrix = new double *[size_x_];
+	for (int i = 0; i < size_x_; ++i) transposedMatrix[i] = new double[size_y_];
+
+	transposeMatrix(_matrix, transposedMatrix, size_x_, size_y_);
+	sort(transposedMatrix, size_y_, size_x_);
+	transposeMatrix(transposedMatrix, _matrix, size_y_, size_x_);
+
+	for (int i = 0; i < size_y_; ++i) {
+	  delete[] transposedMatrix[i];
+	}
 	delete[] transposedMatrix;
   }
 }
@@ -79,26 +98,28 @@ void Matrix::printToFile(const char *outputFilePath) {
 }
 
 void Matrix::transposeMatrix() {
-  for (int i = 0; i < n; ++i) {
-	for (int j = 0; j < m; ++j) {
-	  double tmp = matrix[i][j];
-	  matrix[i][j] = matrix[j][i];
-	  matrix[j][i] = tmp;
+  for (int i = 0; i < size_y_; ++i) {
+	for (int j = 0; j < size_x_; ++j) {
+	  double tmp = _matrix[i][j];
+	  _matrix[i][j] = _matrix[j][i];
+	  _matrix[j][i] = tmp;
 	}
   }
 }
 
-void Matrix::transposeMatrix(double **matrix, double **transposedMatrix, int sizeX, int sizeY) {
-  for (int i = 0; i < sizeY; ++i) {
-	for (int j = 0; j < sizeX; ++j) {
-	  transposedMatrix[i][j] = matrix[j][i];
+void Matrix::transposeMatrix(double **matrix, double **transposedMatrix, int mainSizeX, int mainSizeY) {
+  if (!matrix || !transposedMatrix) return;
+  for (int i = 0; i < mainSizeY; ++i) {
+	for (int j = 0; j < mainSizeX; ++j) {
+	  transposedMatrix[j][i] = matrix[i][j];
 	}
   }
 }
 
 void Matrix::sort(double **matrix, int sizeX, int sizeY) {
+  if (!matrix) return;
   double *tmpLine;
-  double tmpSum;
+  double tmpSum;    // удалять нельзя, так как ссылается на строку в матрице!
   auto *lineSums = new double[sizeY];
   getLinesSums(matrix, lineSums, sizeX, sizeY);
 
@@ -116,6 +137,5 @@ void Matrix::sort(double **matrix, int sizeX, int sizeY) {
 	lineSums[j] = tmpSum;
   }
 
-  delete tmpLine;
   delete[] lineSums;
 }
