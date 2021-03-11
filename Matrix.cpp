@@ -22,13 +22,17 @@ void Matrix::getLinesSums(double **matrix, double *buf, int sizeX, int sizeY) {
 }
 
 void Matrix::init(const char *path) {
-  FILE *iFile;
+  FILE *iFile = fopen(path, "r");
+  if (iFile == nullptr) {
+	printf("Cannot open file!\n");
+	return;
+  }
+
   char *line;
   const int arraySize = 1024;
   char *linePointer;
   const char *delim = " \t";
 
-  iFile = fopen(path, "r");
   line = new char[arraySize];
   fgets(line, arraySize, iFile);
   linePointer = strtok(line, delim);
@@ -94,7 +98,21 @@ void Matrix::simpleInsertSort() {
 }
 
 void Matrix::printToFile(const char *outputFilePath) {
+  FILE *oFile = fopen(outputFilePath, "w");
+  if (oFile == nullptr) {
+	printf("Cannot open file!\n");
+	return;
+  }
 
+  fprintf(oFile, "%d %d\n", size_y_, size_x_);
+  for (int i = 0; i < size_y_; ++i) {
+	for (int j = 0; j < size_x_; ++j) {
+	  fprintf(oFile, "%15.6E ", _matrix[i][j]);
+	}
+	fprintf(oFile, "\n");
+  }
+
+  fclose(oFile);
 }
 
 void Matrix::transposeMatrix() {

@@ -21,7 +21,7 @@ const char *getAbsolutePath(std::string path);
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-	printf("Usage: matrix <input file path> [output file path (not implemented yet)]\n");
+	printf("Usage: matrix <input file path> [output file path]\n");
 	return 1;
   }
   Matrix matrix(getAbsolutePath(argv[1]));
