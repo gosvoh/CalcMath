@@ -25,13 +25,24 @@ int main(int argc, char *argv[]) {
 	return 1;
   }
   Matrix matrix(getAbsolutePath(argv[1]));
-  //matrix.print();
-  //matrix.simpleInsertSort();
-  //matrix.print();
-  //if (argc >= 2) matrix.printToFile(getAbsolutePath(argv[2]));
+  matrix.print();
+  printf("\n");
+  matrix.simpleInsertSort();
+  matrix.print();
+  if (argc >= 3) matrix.printToFile(getAbsolutePath(argv[2]));
   return 0;
 }
 
+/**
+ * Получить абсолютный путь к указанному файлу или директории в виде строки.
+ * Если путь начинается с '/' или с '\', то он считается абсолютным и
+ * возвращается неизменным, в противном случае он считается относительным
+ * для текущей рабочей директории.
+ *
+ * @param path путь для парса
+ *
+ * @return абсолютный путь
+ */
 const char *getAbsolutePath(std::string path) {
   std::replace(path.begin(), path.end(), '\\', '/');
   std::string newDir;
