@@ -24,12 +24,14 @@ public class MatrixMain {
         inputFilePath = getAbsolutePath(args[0]);
         if (args.length > 1) outputFilePath = getAbsolutePath(args[1]);
         try {
-            Matrix matrix = new Matrix(inputFilePath);
+            Matrix matrix = new Matrix();
+            matrix.init(inputFilePath);
+
             matrix.print();
             System.out.println();
-            matrix.simpleInsertSort();
-            matrix.print();
-            System.out.println();
+
+            matrix.getGaussSolution();
+
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
         } catch (IOException e) {
             e.printStackTrace();

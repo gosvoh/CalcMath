@@ -11,22 +11,32 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
     /** Сама матрица для отображения. */
-    private double[][] matrix = null;
+    private double[][] matrix;
     /** Размерность матрицы, высота. */
     private int        n;
     /** Размерность матрицы, длина. */
     private int        m;
+    private double     quality;
 
     /**
      * Конструктор объекта матрицы.
-     *
-     * @param inputFilePath путь к файлу с матрицей
-     *
-     * @throws FileNotFoundException выбрасывается в том случае,
-     *                               если файл не был найден
      */
-    public Matrix(final String inputFilePath) throws FileNotFoundException {
-        this.init(inputFilePath);
+    public Matrix() {
+        this.matrix = null;
+        this.n = 0;
+        this.m = 0;
+    }
+
+    /**
+     * Вывести указанную матрицу на экран.
+     *
+     * @param matrix матрица для вывода
+     */
+    public static void print(double[][] matrix) {
+        for (double[] doubles : matrix) {
+            for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
+            System.out.println();
+        }
     }
 
     /**
@@ -40,12 +50,11 @@ public class Matrix {
         for (int i = 0; i < n; i++) matrix[i] = new double[m];
     }
 
-    /** Вывести матрицу на экран. */
+    /**
+     * Вывести указанную матрицу на экран.
+     */
     public void print() {
-        for (double[] doubles : matrix) {
-            for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
-            System.out.println();
-        }
+        print(matrix);
     }
 
     /**
@@ -67,6 +76,8 @@ public class Matrix {
         String[] strings = pattern.split(string);
         n = Integer.parseInt(strings[0]);
         m = Integer.parseInt(strings[1]);
+        quality = Double.parseDouble(strings[2]);
+        if (n + 1 != m) throw new IllegalArgumentException("Неполное условие, система не может быть решена!");
         create(n, m);
         for (int i = 0; i < n; i++) {
             string = scanner.nextLine().trim();
@@ -174,5 +185,48 @@ public class Matrix {
             fileWriter.write("\n");
         }
         fileWriter.close();
+    }
+
+    private void createTriangleMatrix() {
+        for (int k = 0; k < matrix.length; k++) {
+            double toDel = matrix[k][k];
+
+            if (toDel < quality) {
+                for (int i = k; i < matrix.length; i++)
+                    if (matrix[i][k] < quality) {
+                        matrix[i][k] = 0;
+                        swapLines(k, i);
+                        break;
+                    }
+                throw new IllegalArgumentException("Матрица вырожденная, невозможно получить решение!");
+            }
+
+            // Создание единицы в элементе с индексом [k][k]
+            for (int i = k; i < matrix[k].length; i++) matrix[k][i] /= toDel;
+
+            for (int i = k + 1; i < matrix.length; i++) {
+                toDel = matrix[i][k];
+                for (int j = 0; j < matrix[i].length; j++) matrix[i][j] -= matrix[k][j] * toDel;
+            }
+        }
+    }
+
+    public void getGaussSolution() {
+        double[] ret = new double[matrix.length];
+
+        createTriangleMatrix();
+
+        for (int i = ret.length - 1; i >= 0; i--) {
+            ret[i] = matrix[i][matrix[i].length - 1];
+            for (int j = 0; j < ret.length; j++) if (i != j) ret[i] -= matrix[i][j] * ret[j];
+        }
+
+        for (double v : ret) System.out.printf("%15.6E", v);
+    }
+
+    private void swapLines(int line1, int line2) {
+        double[] tmpLine = matrix[line1];
+        matrix[line1] = matrix[line2];
+        matrix[line2] = tmpLine;
     }
 }
