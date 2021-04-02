@@ -5,8 +5,10 @@
 #include "includes.h"
 #include "Matrix.h"
 
-Matrix::Matrix(const char *inputFilePath) { // NOLINT(cppcoreguidelines-pro-type-member-init)
-  init(inputFilePath);
+Matrix::Matrix() { // NOLINT(cppcoreguidelines-pro-type-member-init)
+  _matrix = nullptr;
+  size_x_ = 0;
+  size_y_ = 0;
 }
 
 Matrix::~Matrix() {
@@ -22,8 +24,8 @@ void Matrix::getLinesSums(double **matrix, double *buf, int sizeX, int sizeY) {
 }
 
 void Matrix::init(const char *path) {
-  FILE *iFile = fopen(path, "r");
-  if (iFile == nullptr) {
+  FILE *iFile;
+  if ((iFile = fopen(path, "r")) == nullptr) {
 	printf("Cannot open file!\n");
 	return;
   }
@@ -45,6 +47,7 @@ void Matrix::init(const char *path) {
 	for (int j = 0; j < size_x_; ++j) {
 	  if (j == 0) linePointer = strtok(line, delim);
 	  else linePointer = strtok(nullptr, delim);
+	  //fscanf
 	  _matrix[i][j] = strtod(linePointer, nullptr);
 	}
   }
@@ -98,8 +101,8 @@ void Matrix::simpleInsertSort() {
 }
 
 void Matrix::printToFile(const char *outputFilePath) {
-  FILE *oFile = fopen(outputFilePath, "w");
-  if (oFile == nullptr) {
+  FILE *oFile;
+  if ((oFile = fopen(outputFilePath, "w")) == nullptr) {
 	printf("Cannot open file!\n");
 	return;
   }
@@ -136,17 +139,17 @@ void Matrix::transposeMatrix(double **matrix, double **transposedMatrix, int mai
 
 void Matrix::sort(double **matrix, int sizeX, int sizeY) {
   if (!matrix) return;
-  double *tmpLine;
-  double tmpSum;    // удалять нельзя, так как ссылается на строку в матрице!
+  double *tmpLine;		// удалять нельзя, так как ссылается на строку в матрице!
+  double tmpSum;
   auto *lineSums = new double[sizeY];
-  getLinesSums(matrix, lineSums, sizeX, sizeY);
+  getLinesSums(matrix, lineSums, sizeX, sizeY); //return double*
 
   for (int i = 1; i < sizeY; ++i) {
 	tmpLine = matrix[i];
 	tmpSum = lineSums[i];
 
 	int j = i;
-	while (j > 0 && tmpSum < lineSums[i - 1]) {
+	while (j > 0 && tmpSum < lineSums[i - 1]) { // make for cycle
 	  matrix[j] = matrix[j - 1];
 	  lineSums[j] = lineSums[j - 1];
 	  j--;

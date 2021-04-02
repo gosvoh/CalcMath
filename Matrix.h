@@ -82,7 +82,7 @@ class Matrix {
    * @throws FileNotFoundException выбрасывается в том случае,
    *                               если файл не был найден
    */
-  explicit Matrix(const char *inputFilePath);
+  explicit Matrix();
 
   /** Деструктор матрицы. */
   ~Matrix();
