@@ -66,8 +66,9 @@ public class Matrix {
      *
      * @param path путь к файлу с матрицей
      *
-     * @throws FileNotFoundException выбрасывается в том случае,
-     *                               если файл не был найден
+     * @throws FileNotFoundException    выбрасывается в том случае,
+     *                                  если файл не был найден
+     * @throws IllegalArgumentException если количество строк не совпадает с количеством неизвестных переменных
      */
     public void init(final String path) throws FileNotFoundException {
         File inFile = new File(path);
@@ -190,6 +191,8 @@ public class Matrix {
 
     /**
      * Преобразовать нашу матрицу в треугольную.
+     *
+     * @throws IllegalArgumentException если матрица вырожденная, решений бесконечно много или их нет
      */
     private void createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
