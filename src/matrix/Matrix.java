@@ -33,7 +33,7 @@ public class Matrix {
      *
      * @param matrix матрица для вывода
      */
-    public static void print(double[][] matrix) {
+    public static void print(final double[][] matrix) {
         for (double[] doubles : matrix) {
             for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
             System.out.println();
@@ -68,7 +68,8 @@ public class Matrix {
      *
      * @throws FileNotFoundException    выбрасывается в том случае,
      *                                  если файл не был найден
-     * @throws IllegalArgumentException если количество строк не совпадает с количеством неизвестных переменных
+     * @throws IllegalArgumentException если количество строк не совпадает с
+     *                                  количеством неизвестных переменных
      */
     public void init(final String path) throws FileNotFoundException {
         File inFile = new File(path);
@@ -95,6 +96,7 @@ public class Matrix {
     }
 
     /** Метод сортировки, путём простой вставки. */
+    @SuppressWarnings("unused")
     public void simpleInsertSort() {
         if (sizeY == sizeX) {
             transposeMatrix();
@@ -142,7 +144,8 @@ public class Matrix {
      */
     private double[] getLinesSums(final double[][] matrix) {
         double[] ret = new double[matrix.length];
-        for (int i = 0; i < matrix.length; i++) for (int j = 0; j < matrix[i].length; j++) ret[i] += matrix[i][j];
+        for (int i = 0; i < matrix.length; i++)
+            for (int j = 0; j < matrix[i].length; j++) ret[i] += matrix[i][j];
         return ret;
     }
 
@@ -183,7 +186,8 @@ public class Matrix {
         FileWriter fileWriter = new FileWriter(outputFile);
         fileWriter.write(matrix.length + " " + matrix[0].length + "\n");
         for (double[] doubles : matrix) {
-            for (double aDouble : doubles) fileWriter.write(String.format("%15.6E", aDouble).replace(',', '.'));
+            for (double aDouble : doubles)
+                fileWriter.write(String.format("%15.6E", aDouble).replace(',', '.'));
             fileWriter.write("\n");
         }
         fileWriter.close();
@@ -192,7 +196,8 @@ public class Matrix {
     /**
      * Преобразовать нашу матрицу в треугольную.
      *
-     * @throws IllegalArgumentException если матрица вырожденная, решений бесконечно много или их нет
+     * @throws IllegalArgumentException если матрица вырожденная,
+     *                                  решений бесконечно много или их нет
      */
     private void createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
@@ -235,7 +240,8 @@ public class Matrix {
 
         for (int i = ret.length - 1; i >= 0; i--) {
             ret[i] = matrix[i][sizeX - 1];
-            for (int j = 0; j < ret.length; j++) if (i != j) ret[i] -= matrix[i][j] * ret[j];
+            for (int j = 0; j < ret.length; j++)
+                if (i != j) ret[i] -= matrix[i][j] * ret[j];
             ret[i] /= matrix[i][i];
         }
 
