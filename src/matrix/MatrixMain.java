@@ -31,6 +31,7 @@ public class MatrixMain {
             System.out.println();
 
             matrix.getGaussSolution();
+            System.out.println();
 
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
         } catch (IOException e) {
