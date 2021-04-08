@@ -13,9 +13,10 @@ public class Matrix {
     /** Сама матрица для отображения. */
     private double[][] matrix;
     /** Размерность матрицы, высота. */
-    private int        n;
+    private int        sizeY;
     /** Размерность матрицы, длина. */
-    private int        m;
+    private int        sizeX;
+    /** Условный ноль. */
     private double     quality;
 
     /**
@@ -23,8 +24,8 @@ public class Matrix {
      */
     public Matrix() {
         this.matrix = null;
-        this.n = 0;
-        this.m = 0;
+        this.sizeY = 0;
+        this.sizeX = 0;
     }
 
     /**
@@ -51,7 +52,7 @@ public class Matrix {
     }
 
     /**
-     * Вывести указанную матрицу на экран.
+     * Вывести матрицу на экран.
      */
     public void print() {
         print(matrix);
@@ -74,16 +75,16 @@ public class Matrix {
         Pattern pattern = Pattern.compile("[ \t]+");
         String string = scanner.nextLine();
         String[] strings = pattern.split(string);
-        n = Integer.parseInt(strings[0]);
-        m = Integer.parseInt(strings[1]);
+        sizeY = Integer.parseInt(strings[0]);
+        sizeX = Integer.parseInt(strings[1]);
         quality = Double.parseDouble(strings[2]);
-        if (n + 1 != m) throw new IllegalArgumentException("Неполное условие, система не может быть решена!");
-        create(n, m);
-        for (int i = 0; i < n; i++) {
+        if (sizeY + 1 != sizeX) throw new IllegalArgumentException("Неполное условие, система не может быть решена!");
+        create(sizeY, sizeX);
+        for (int i = 0; i < sizeY; i++) {
             string = scanner.nextLine().trim();
             strings = pattern.split(string);
             try {
-                for (int j = 0; j < m; j++) matrix[i][j] = Double.parseDouble(strings[j].replace(',', '.'));
+                for (int j = 0; j < sizeX; j++) matrix[i][j] = Double.parseDouble(strings[j].replace(',', '.'));
             } catch (NumberFormatException e) {
                 System.out.println(e.getMessage());
                 System.exit(1);
@@ -94,12 +95,12 @@ public class Matrix {
 
     /** Метод сортировки, путём простой вставки. */
     public void simpleInsertSort() {
-        if (n == m) {
+        if (sizeY == sizeX) {
             transposeMatrix();
             sort(matrix);
             transposeMatrix();
         } else {
-            double[][] transposedMatrix = new double[m][n];
+            double[][] transposedMatrix = new double[sizeX][sizeY];
             transposeMatrix(matrix, transposedMatrix);
             sort(transposedMatrix);
             transposeMatrix(transposedMatrix, matrix);
@@ -107,7 +108,7 @@ public class Matrix {
     }
 
     /**
-     * Метод, где происходит реальная сортировка
+     * Метод, где происходит реальная сортировка.
      *
      * @param matrix матрица, которую нужно отсортировать
      */
@@ -144,7 +145,7 @@ public class Matrix {
         return ret;
     }
 
-    /** Транспонирование квадратной матрицы */
+    /** Транспонирование квадратной матрицы. */
     private void transposeMatrix() {
         for (int i = 0; i < matrix.length; i++)
             for (int j = i; j < matrix.length; j++) {
@@ -187,44 +188,75 @@ public class Matrix {
         fileWriter.close();
     }
 
+    /**
+     * Преобразовать нашу матрицу в треугольную.
+     */
     private void createTriangleMatrix() {
-        for (int k = 0; k < matrix.length; k++) {
-            double toDel = matrix[k][k];
-
-            if (toDel < quality) {
-                for (int i = k; i < matrix.length; i++)
-                    if (matrix[i][k] < quality) {
+        for (int k = 0; k < sizeY; k++) {
+            if (isZero(matrix[k][k])) {
+                for (int i = k; i < sizeY; i++) {
+                    if (isZero(matrix[i][k])) {
                         matrix[i][k] = 0;
                         swapLines(k, i);
                         break;
                     }
+                }
                 throw new IllegalArgumentException("Матрица вырожденная, невозможно получить решение!");
             }
 
-            // Создание единицы в элементе с индексом [k][k]
-            for (int i = k; i < matrix[k].length; i++) matrix[k][i] /= toDel;
+            /*
+             * Так как первая строка остаётся без изменений, то, чтобы не
+             * переписывать логику, просто пропустим её.
+             */
+            if (k == 0) continue;
 
-            for (int i = k + 1; i < matrix.length; i++) {
-                toDel = matrix[i][k];
-                for (int j = 0; j < matrix[i].length; j++) matrix[i][j] -= matrix[k][j] * toDel;
+            for (int i = k; i < sizeY; i++) {
+                double multiplier = matrix[i][k - 1] / matrix[k - 1][k - 1];
+                for (int j = 0; j < sizeX; j++)
+                    matrix[i][j] = matrix[i][j] - multiplier * matrix[k - 1][j];
             }
         }
+
+        if (isZero(matrix[sizeY - 1][sizeX - 1])) throw new IllegalArgumentException("Решений бесконечно много!");
+        if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2]))
+            throw new IllegalArgumentException("Решений нет");
     }
 
+    /**
+     * Преобразовать матрицу в треугольную и вывести решение методом Гаусса.
+     */
     public void getGaussSolution() {
-        double[] ret = new double[matrix.length];
+        double[] ret = new double[sizeY];
 
         createTriangleMatrix();
 
         for (int i = ret.length - 1; i >= 0; i--) {
-            ret[i] = matrix[i][matrix[i].length - 1];
+            ret[i] = matrix[i][sizeX - 1];
             for (int j = 0; j < ret.length; j++) if (i != j) ret[i] -= matrix[i][j] * ret[j];
+            ret[i] /= matrix[i][i];
         }
 
         for (double v : ret) System.out.printf("%15.6E", v);
     }
 
-    private void swapLines(int line1, int line2) {
+    /**
+     * Проверка числа на условный ноль.
+     *
+     * @param value число для проверки
+     *
+     * @return true, если -quality < value < quality
+     */
+    private boolean isZero(final double value) {
+        return value > -quality && value < quality;
+    }
+
+    /**
+     * Поменять местами указанные строки.
+     *
+     * @param line1 первая строка для обмена
+     * @param line2 вторая строка для обмена
+     */
+    private void swapLines(final int line1, final int line2) {
         double[] tmpLine = matrix[line1];
         matrix[line1] = matrix[line2];
         matrix[line2] = tmpLine;
