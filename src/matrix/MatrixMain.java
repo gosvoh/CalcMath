@@ -30,8 +30,14 @@ public class MatrixMain {
             matrix.print();
             System.out.println();
 
-            matrix.getGaussSolution();
+            int tmp = matrix.createTriangleMatrix();
             System.out.println();
+
+            switch (tmp) {
+                case 0 ->matrix.getGaussSolution();
+                case 1 -> System.out.println("Решений нет!");
+                case 2 -> System.out.println("Решений бесконечно много!");
+            }
 
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
         } catch (IOException e) {

@@ -198,8 +198,11 @@ public class Matrix {
      *
      * @throws IllegalArgumentException если матрица вырожденная,
      *                                  решений бесконечно много или их нет
+     * @return <p> 0 - если матрица решаема </p>
+     *         <p> 1 - если матрица вырожденная </p>
+     *         <p> 2 - если имеется бесконечно много решений </p>
      */
-    private void createTriangleMatrix() {
+    public int createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
             if (isZero(matrix[k][k])) {
                 for (int i = k; i < sizeY; i++) {
@@ -209,7 +212,7 @@ public class Matrix {
                         break;
                     }
                 }
-                throw new IllegalArgumentException("Матрица вырожденная, невозможно получить решение!");
+                return 1;
             }
 
             /*
@@ -225,9 +228,11 @@ public class Matrix {
             }
         }
 
-        if (isZero(matrix[sizeY - 1][sizeX - 1])) throw new IllegalArgumentException("Решений бесконечно много!");
+        if (isZero(matrix[sizeY - 1][sizeX - 1])) return 1;
         if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2]))
-            throw new IllegalArgumentException("Решений нет");
+            return 2;
+
+        return 0;
     }
 
     /**
@@ -235,8 +240,6 @@ public class Matrix {
      */
     public void getGaussSolution() {
         double[] ret = new double[sizeY];
-
-        createTriangleMatrix();
 
         for (int i = ret.length - 1; i >= 0; i--) {
             ret[i] = matrix[i][sizeX - 1];
