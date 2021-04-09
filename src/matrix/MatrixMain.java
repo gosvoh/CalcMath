@@ -31,13 +31,11 @@ public class MatrixMain {
             System.out.println();
 
             int tmp = matrix.createTriangleMatrix();
+            matrix.print();
             System.out.println();
 
-            switch (tmp) {
-                case 0 ->matrix.getGaussSolution();
-                case 1 -> System.out.println("Решений нет!");
-                case 2 -> System.out.println("Решений бесконечно много!");
-            }
+            if (tmp == 0) matrix.getGaussSolution();
+            else System.out.println("Решений нет или бесконечно много!");
 
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
         } catch (IOException e) {

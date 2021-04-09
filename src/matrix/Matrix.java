@@ -51,6 +51,32 @@ public class Matrix {
     }
 
     /**
+     * Получить сумму элементов указанной строки.
+     *
+     * @param matrix матрица для подсчёта сумм столбцов
+     * @return массив сумм элементов строки
+     */
+    private static double[] getLinesSums(final double[][] matrix) {
+        double[] ret = new double[matrix.length];
+        for (int i = 0; i < matrix.length; i++)
+            for (int j = 0; j < matrix[i].length; j++) ret[i] += matrix[i][j];
+        return ret;
+    }
+
+    /**
+     * Получить сумму элементов указанной строки без последнего элемента.
+     *
+     * @param matrix матрица для подсчёта сумм столбцов
+     * @return массив сумм элементов строки
+     */
+    private static double[] getLinesSumsWithoutLast(final double[][] matrix) {
+        double[] ret = new double[matrix.length];
+        for (int i = 0; i < matrix.length; i++)
+            for (int j = 0; j < matrix[i].length - 1; j++) ret[i] += matrix[i][j];
+        return ret;
+    }
+
+    /**
      * Метод инициализации элементов матрицы.
      *
      * @param n высота матрицы
@@ -147,19 +173,6 @@ public class Matrix {
     }
 
     /**
-     * Получить сумму элементов указанной строки.
-     *
-     * @param matrix матрица для подсчёта сумм столбцов
-     * @return массив сумм элементов строки
-     */
-    private double[] getLinesSums(final double[][] matrix) {
-        double[] ret = new double[matrix.length];
-        for (int i = 0; i < matrix.length; i++)
-            for (int j = 0; j < matrix[i].length; j++) ret[i] += matrix[i][j];
-        return ret;
-    }
-
-    /**
      * Транспонирование квадратной матрицы.
      */
     private void transposeMatrix() {
@@ -214,34 +227,44 @@ public class Matrix {
     public int createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
             if (isZero(matrix[k][k])) {
-                for (int i = k; i < sizeY; i++) {
-                    if (isZero(matrix[i][k])) {
-                        matrix[i][k] = 0;
-                        swapLines(k, i);
-                        break;
-                    }
-                }
-                return 1;
+                int nonNull = findNonNullElement(k);
+                if ((nonNull != -1)) swapLines(k, nonNull);
+                else return 1;
             }
 
-            /*
-             * Так как первая строка остаётся без изменений, то, чтобы не
-             * переписывать логику, просто пропустим её.
-             */
-            if (k == 0) continue;
-
-            for (int i = k; i < sizeY; i++) {
-                double multiplier = matrix[i][k - 1] / matrix[k - 1][k - 1];
-                for (int j = 0; j < sizeX; j++)
-                    matrix[i][j] = matrix[i][j] - multiplier * matrix[k - 1][j];
+            for (int i = k + 1; i < sizeY; i++) {
+                calculateCoefficients(i, i, k);
             }
         }
 
-        if (isZero(matrix[sizeY - 1][sizeX - 1])) return 1;
+        if (isZero(matrix[sizeY - 1][sizeX - 1]))
+            return 1;
         if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2]))
             return 2;
 
         return 0;
+    }
+
+    private int findNonNullElement(int currentLine) {
+        for (int i = currentLine + 1; i < sizeY; i++)
+            if (!isZero(matrix[i][currentLine])) return i;
+        return -1;
+    }
+
+    /**
+     * Вычислить коэффициенты, начиная с указанной строки.
+     *
+     * @param currentLine начальная строка
+     */
+    private void calculateCoefficients(int currentLine, int currentColumn, int workingLine) {
+        double multiplier = matrix[currentLine][workingLine] / matrix[workingLine][workingLine];
+        matrix[currentLine][workingLine] = 0;
+        for (int j = currentColumn; j < sizeX; j++) {
+            matrix[currentLine][j] -= multiplier * matrix[workingLine][currentColumn];
+            if (isZero(matrix[currentColumn][j])) matrix[currentColumn][j] = 0;
+        }
+        print();
+        System.out.println();
     }
 
     /**
@@ -267,7 +290,7 @@ public class Matrix {
      * @return true, если -quality < value < quality
      */
     private boolean isZero(final double value) {
-        return value > -quality && value < quality;
+        return Math.abs(value) <= quality;
     }
 
     /**
@@ -280,5 +303,20 @@ public class Matrix {
         double[] tmpLine = matrix[line1];
         matrix[line1] = matrix[line2];
         matrix[line2] = tmpLine;
+    }
+
+    public void getIterationSolution() {
+
+    }
+
+    private boolean checkDiagonal() {
+        for (int i = 0; i < sizeY; i++) {
+            if (isZero(matrix[i][i])) {
+                for (int j = i; j < sizeY; j++) {
+
+                }
+            }
+        }
+        return true;
     }
 }
