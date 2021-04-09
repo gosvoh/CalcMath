@@ -7,17 +7,27 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-/** Класс матрицы. */
+/**
+ * Класс матрицы.
+ */
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
-    /** Сама матрица для отображения. */
+    /**
+     * Сама матрица для отображения.
+     */
     private double[][] matrix;
-    /** Размерность матрицы, высота. */
-    private int        sizeY;
-    /** Размерность матрицы, длина. */
-    private int        sizeX;
-    /** Условный ноль. */
-    private double     quality;
+    /**
+     * Размерность матрицы, высота.
+     */
+    private int sizeY;
+    /**
+     * Размерность матрицы, длина.
+     */
+    private int sizeX;
+    /**
+     * Условный ноль.
+     */
+    private double quality;
 
     /**
      * Конструктор объекта матрицы.
@@ -65,7 +75,6 @@ public class Matrix {
      * разделяем её на элементы и вносим в массив.
      *
      * @param path путь к файлу с матрицей
-     *
      * @throws FileNotFoundException    выбрасывается в том случае,
      *                                  если файл не был найден
      * @throws IllegalArgumentException если количество строк не совпадает с
@@ -95,7 +104,9 @@ public class Matrix {
         scanner.close();
     }
 
-    /** Метод сортировки, путём простой вставки. */
+    /**
+     * Метод сортировки, путём простой вставки.
+     */
     @SuppressWarnings("unused")
     public void simpleInsertSort() {
         if (sizeY == sizeX) {
@@ -139,7 +150,6 @@ public class Matrix {
      * Получить сумму элементов указанной строки.
      *
      * @param matrix матрица для подсчёта сумм столбцов
-     *
      * @return массив сумм элементов строки
      */
     private double[] getLinesSums(final double[][] matrix) {
@@ -149,7 +159,9 @@ public class Matrix {
         return ret;
     }
 
-    /** Транспонирование квадратной матрицы. */
+    /**
+     * Транспонирование квадратной матрицы.
+     */
     private void transposeMatrix() {
         for (int i = 0; i < matrix.length; i++)
             for (int j = i; j < matrix.length; j++) {
@@ -177,7 +189,6 @@ public class Matrix {
      * Вывести матрицу в файл.
      *
      * @param outputFilePath путь до файла для вывода матрицы
-     *
      * @throws IOException выбрасывается в том случае,
      *                     если нет доступа к записи в указанный файл
      */
@@ -196,11 +207,9 @@ public class Matrix {
     /**
      * Преобразовать нашу матрицу в треугольную.
      *
-     * @throws IllegalArgumentException если матрица вырожденная,
-     *                                  решений бесконечно много или их нет
      * @return <p> 0 - если матрица решаема </p>
-     *         <p> 1 - если матрица вырожденная </p>
-     *         <p> 2 - если имеется бесконечно много решений </p>
+     * <p> 1 - если матрица вырожденная </p>
+     * <p> 2 - если имеется бесконечно много решений </p>
      */
     public int createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
@@ -255,7 +264,6 @@ public class Matrix {
      * Проверка числа на условный ноль.
      *
      * @param value число для проверки
-     *
      * @return true, если -quality < value < quality
      */
     private boolean isZero(final double value) {
