@@ -12,30 +12,22 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
-    /**
-     * Сама матрица для отображения.
-     */
+    /** Сама матрица для отображения. */
     private double[][] matrix;
-    /**
-     * Размерность матрицы, высота.
-     */
-    private int        sizeY;
-    /**
-     * Размерность матрицы, длина.
-     */
-    private int        sizeX;
-    /**
-     * Условный ноль.
-     */
+    /** Размерность матрицы, высота. */
+    private int        mHeight;
+    /** Размерность матрицы, длина. */
+    private int        mLength;
+    /** Условный ноль. */
     private double     quality;
+    /** Максимальное количество итераций для итерационного метода. */
+    private int        maxIterations;
 
-    /**
-     * Конструктор объекта матрицы.
-     */
+    /** Конструктор объекта матрицы. */
     public Matrix() {
         this.matrix = null;
-        this.sizeY = 0;
-        this.sizeX = 0;
+        this.mHeight = 0;
+        this.mLength = 0;
     }
 
     /**
@@ -71,10 +63,10 @@ public class Matrix {
      *
      * @return массив сумм элементов строки
      */
-    private static double[] getLinesSumsWithoutLast(final double[][] matrix) {
+    private static double[] getAbsLinesSumsWithoutLast(final double[][] matrix) {
         double[] ret = new double[matrix.length];
         for (int i = 0; i < matrix.length; i++)
-            for (int j = 0; j < matrix[i].length - 1; j++) ret[i] += matrix[i][j];
+            for (int j = 0; j < matrix[i].length - 1; j++) ret[i] += Math.abs(matrix[i][j]);
         return ret;
     }
 
@@ -89,9 +81,7 @@ public class Matrix {
         for (int i = 0; i < n; i++) matrix[i] = new double[m];
     }
 
-    /**
-     * Вывести матрицу на экран.
-     */
+    /** Вывести матрицу на экран. */
     public void print() {
         print(matrix);
     }
@@ -115,16 +105,18 @@ public class Matrix {
         Pattern pattern = Pattern.compile("[ \t]+");
         String string = scanner.nextLine();
         String[] strings = pattern.split(string);
-        sizeY = Integer.parseInt(strings[0]);
-        sizeX = Integer.parseInt(strings[1]);
-        quality = Double.parseDouble(strings[2]);
-        if (sizeY + 1 != sizeX) throw new IllegalArgumentException("Неполное условие, система не может быть решена!");
-        create(sizeY, sizeX);
-        for (int i = 0; i < sizeY; i++) {
+        mHeight = Integer.parseInt(strings[0]);
+        mLength = Integer.parseInt(strings[1]);
+        if (strings.length > 2) quality = Double.parseDouble(strings[2]);
+        if (strings.length > 3) maxIterations = Integer.parseInt(strings[3]);
+        if (mHeight + 1 != mLength)
+            throw new IllegalArgumentException("Неполное условие, система не может быть решена!");
+        create(mHeight, mLength);
+        for (int i = 0; i < mHeight; i++) {
             string = scanner.nextLine().trim();
             strings = pattern.split(string);
             try {
-                for (int j = 0; j < sizeX; j++) matrix[i][j] = Double.parseDouble(strings[j].replace(',', '.'));
+                for (int j = 0; j < mLength; j++) matrix[i][j] = Double.parseDouble(strings[j].replace(',', '.'));
             } catch (NumberFormatException e) {
                 System.out.println(e.getMessage());
                 System.exit(1);
@@ -133,17 +125,15 @@ public class Matrix {
         scanner.close();
     }
 
-    /**
-     * Метод сортировки, путём простой вставки.
-     */
+    /** Метод сортировки, путём простой вставки. */
     @SuppressWarnings("unused")
     public void simpleInsertSort() {
-        if (sizeY == sizeX) {
+        if (mHeight == mLength) {
             transposeMatrix();
             sort(matrix);
             transposeMatrix();
         } else {
-            double[][] transposedMatrix = new double[sizeX][sizeY];
+            double[][] transposedMatrix = new double[mLength][mHeight];
             transposeMatrix(matrix, transposedMatrix);
             sort(transposedMatrix);
             transposeMatrix(transposedMatrix, matrix);
@@ -175,9 +165,7 @@ public class Matrix {
         }
     }
 
-    /**
-     * Транспонирование квадратной матрицы.
-     */
+    /** Транспонирование квадратной матрицы. */
     private void transposeMatrix() {
         for (int i = 0; i < matrix.length; i++)
             for (int j = i; j < matrix.length; j++) {
@@ -229,18 +217,18 @@ public class Matrix {
      * <p> 2 - если имеется бесконечно много решений </p>
      */
     public int createTriangleMatrix() {
-        for (int k = 0; k < sizeY; k++) {
+        for (int k = 0; k < mHeight; k++) {
             if (isZero(matrix[k][k])) {
                 int nonNull = findNonNullElementInColumn(k);
                 if ((nonNull != -1)) swapLines(k, nonNull);
                 else return 1;
             }
 
-            for (int i = k + 1; i < sizeY; i++) calculateCoefficients(i, k);
+            for (int i = k + 1; i < mHeight; i++) calculateCoefficients(i, k);
         }
 
-        if (isZero(matrix[sizeY - 1][sizeX - 1])) return 1;
-        if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2])) return 2;
+        if (isZero(matrix[mHeight - 1][mLength - 1])) return 1;
+        if (isZero(matrix[mHeight - 1][mLength - 1]) && isZero(matrix[mHeight - 1][mLength - 2])) return 2;
 
         return 0;
     }
@@ -253,7 +241,7 @@ public class Matrix {
      * @return индекс элемента, если он не найден, то -1
      */
     private int findNonNullElementInColumn(int currentColumn) {
-        for (int i = currentColumn + 1; i < sizeY; i++)
+        for (int i = currentColumn + 1; i < mHeight; i++)
             if (!isZero(matrix[i][currentColumn])) return i;
         return -1;
     }
@@ -261,26 +249,24 @@ public class Matrix {
     /**
      * Вычислить коэффициенты, начиная с указанной строки и указанного столбца.
      *
-     * @param currentLine текущая строка
+     * @param currentLine  текущая строка
      * @param outsideLoopK столбец и строка во внешнем цикле
      */
     private void calculateCoefficients(int currentLine, int outsideLoopK) {
         double multiplier = matrix[currentLine][outsideLoopK] / matrix[outsideLoopK][outsideLoopK];
         matrix[currentLine][outsideLoopK] = 0;
-        for (int j = outsideLoopK + 1; j < sizeX; j++) {
+        for (int j = outsideLoopK + 1; j < mLength; j++) {
             matrix[currentLine][j] -= multiplier * matrix[outsideLoopK][j];
             if (isZero(matrix[currentLine][j])) matrix[currentLine][j] = 0;
         }
     }
 
-    /**
-     * Преобразовать матрицу в треугольную и вывести решение методом Гаусса.
-     */
+    /** Преобразовать матрицу в треугольную и вывести решение методом Гаусса. */
     public void getGaussSolution() {
-        double[] ret = new double[sizeY];
+        double[] ret = new double[mHeight];
 
         for (int i = ret.length - 1; i >= 0; i--) {
-            ret[i] = matrix[i][sizeX - 1];
+            ret[i] = matrix[i][mLength - 1];
             for (int j = 0; j < ret.length; j++)
                 if (i != j) ret[i] -= matrix[i][j] * ret[j];
             ret[i] /= matrix[i][i];
@@ -310,22 +296,80 @@ public class Matrix {
         double[] tmpLine = matrix[line1];
         matrix[line1] = matrix[line2];
         matrix[line2] = tmpLine;
+        print();
+        System.out.println();
     }
 
-    //TODO Итерационный метод решения матрицы
-    public void getIterationSolution() {
-
-    }
-
-    //TODO Итерационный метод решения матрицы
-    private boolean checkDiagonal() {
-        for (int i = 0; i < sizeY; i++) {
-            if (isZero(matrix[i][i])) {
-                for (int j = i; j < sizeY; j++) {
-
-                }
+    /**
+     * Вывести решение матрицы итерационным методом.
+     *
+     * @param initApproximations начальные приближения
+     *
+     * @return true, если матрица решена, иначе false
+     */
+    public boolean getIterationSolution(double[] initApproximations) {
+        if (checkMatrix()) {
+            for (int i = 0; i < maxIterations; i++) {
+                calculateNewApproximations(initApproximations);
             }
+            for (double initApproximation : initApproximations) System.out.printf("%15.6E", initApproximation);
+            System.out.println();
+        } else {
+            //TODO Добавить неконтролируемое решение
+            return false;
         }
+
         return true;
+    }
+
+    /**
+     * Вычислить новые приближения.
+     *
+     * @param approximations предыдущие приближения
+     */
+    private void calculateNewApproximations(double[] approximations) {
+        for (int i = 0; i < approximations.length; i++) {
+            approximations[i] = matrix[i][mLength - 1];
+            for (int j = 0; j < mLength - 1; j++) if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
+            approximations[i] /= matrix[i][i];
+        }
+    }
+
+    /**
+     * Проверить матрицу на достаточное условие сходимости.
+     * Если на диагонали есть ноль, то попытаться убрать его с диагонали.
+     *
+     * @return true, если достаточное условие сходимости выполняется
+     */
+    private boolean checkMatrix() {
+        double[] lineSums = getAbsLinesSumsWithoutLast(matrix);
+        boolean isEnough = false;
+        for (int i = 0; i < mHeight; i++) {
+            if (isZero(matrix[i][i])) {
+                int nonNull = findNonNullElementInColumn(i);
+                if ((nonNull != -1)) swapLines(i, nonNull);
+                else return false;
+            }
+            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) isEnough = true;
+        }
+        return isEnough;
+    }
+
+    /**
+     * Получить высоту матрицы.
+     *
+     * @return высота матрицы
+     */
+    public int getmHeight() {
+        return mHeight;
+    }
+
+    /**
+     * Получить длину матрицы.
+     *
+     * @return длина матрицы
+     */
+    public int getmLength() {
+        return mLength;
     }
 }

@@ -30,15 +30,17 @@ public class MatrixMain {
             matrix.print();
             System.out.println();
 
-            int tmp = matrix.createTriangleMatrix();
+            int tmp = matrix.getIterationSolution(new double[matrix.getmHeight()]) ? 0 : 1;
+            if (tmp != 0) tmp = matrix.createTriangleMatrix();
             matrix.print();
             System.out.println();
 
             if (tmp == 0) matrix.getGaussSolution();
             else System.out.println("Решений нет или бесконечно много!");
 
+
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
@@ -55,16 +57,13 @@ public class MatrixMain {
      */
     private static String getAbsolutePath(String path) {
         path = path.contains("\\") ? path.replaceAll("\\\\", "/") : path;
-        if (path.startsWith("/") || Pattern.matches("[a-zA-Z]:",
-                path.substring(0, 2))) return path;
+        if (path.startsWith("/") || Pattern.matches("[a-zA-Z]:", path.substring(0, 2))) return path;
         else if (path.startsWith("~")) {
             String homePath = System.getProperty("user.home");
-            return homePath.endsWith("/") ?
-                    homePath + path.substring(1) : homePath + "/" + path.substring(1);
+            return homePath.endsWith("/") ? homePath + path.substring(1) : homePath + "/" + path.substring(1);
         } else {
             String workingDirectory = System.getProperty("user.dir");
-            return workingDirectory.endsWith("/") ?
-                    workingDirectory + path : workingDirectory + "/" + path;
+            return workingDirectory.endsWith("/") ? workingDirectory + path : workingDirectory + "/" + path;
         }
     }
 }
