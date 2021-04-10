@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -12,16 +13,18 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
+    /** Максимальное количество итераций для решения с контролем */
+    private final int        maxControlIterations = 10;
     /** Сама матрица для отображения. */
-    private double[][] matrix;
+    private       double[][] matrix;
     /** Размерность матрицы, высота. */
-    private int        mHeight;
+    private       int        mHeight;
     /** Размерность матрицы, длина. */
-    private int        mLength;
+    private       int        mLength;
     /** Условный ноль. */
-    private double     quality;
+    private       double     quality;
     /** Максимальное количество итераций для итерационного метода. */
-    private int        maxIterations;
+    private       int        maxIterations;
 
     /** Конструктор объекта матрицы. */
     public Matrix() {
@@ -40,6 +43,16 @@ public class Matrix {
             for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
             System.out.println();
         }
+    }
+
+    /**
+     * Вывести указанный массив на экран.
+     *
+     * @param array массив для вывода
+     */
+    public static void print(final double[] array) {
+        for (double v : array) System.out.printf("%15.6E", v);
+        System.out.println();
     }
 
     /**
@@ -272,7 +285,7 @@ public class Matrix {
             ret[i] /= matrix[i][i];
         }
 
-        for (double v : ret) System.out.printf("%15.6E", v);
+        print(ret);
     }
 
     /**
@@ -280,7 +293,7 @@ public class Matrix {
      *
      * @param value число для проверки
      *
-     * @return true, если -quality < value < quality
+     * @return true, если |value| < quality
      */
     private boolean isZero(final double value) {
         return Math.abs(value) <= quality;
@@ -308,15 +321,36 @@ public class Matrix {
      * @return true, если матрица решена, иначе false
      */
     public boolean getIterationSolution(double[] initApproximations) {
-        if (checkMatrix()) {
-            for (int i = 0; i < maxIterations; i++) {
-                calculateNewApproximations(initApproximations);
+        int tmp = checkMatrix();
+
+        /* Требуется версия Java не ниже 14 */
+        switch (tmp) {
+            /* Решение без контроля */
+            case 0 -> {
+                for (int i = 0; i < maxIterations; i++) calculateNewApproximations(initApproximations);
+                print(initApproximations);
+                System.out.println();
             }
-            for (double initApproximation : initApproximations) System.out.printf("%15.6E", initApproximation);
-            System.out.println();
-        } else {
-            //TODO Добавить неконтролируемое решение
-            return false;
+            case 1, 2 -> { return false;}
+            /* Решение с контролем */
+            case 3 -> {
+                int counter = 0;
+                double[] oldApproximations = new double[initApproximations.length];
+                int i;
+                /*
+                 * Даём maxControlIterations попыток на решение. Если новые приближения больше или равны старым 40% раз подряд,
+                 * то считаем решение успешным и выполняем оставшиеся итерации без контроля, иначе считаем контроль проваленным.
+                 */
+                for (i = 0; i < maxControlIterations; i++) {
+                    calculateNewApproximations(initApproximations);
+                    if (Arrays.compare(oldApproximations, initApproximations) >= 0) counter++;
+                    else counter = 0;
+                    if (counter == maxControlIterations * 0.4) break;
+                    System.arraycopy(initApproximations, 0, oldApproximations, 0, initApproximations.length);
+                }
+                if (counter != 4) return false;
+                for (; i < maxIterations; i++) calculateNewApproximations(initApproximations);
+            }
         }
 
         return true;
@@ -339,20 +373,26 @@ public class Matrix {
      * Проверить матрицу на достаточное условие сходимости.
      * Если на диагонали есть ноль, то попытаться убрать его с диагонали.
      *
-     * @return true, если достаточное условие сходимости выполняется
+     * @return <p> 0 если условие выполняется </p>
+     * <p> 1 если не удалось избавиться от нулей в диагонали </p>
+     * <p> 2 если нулей в диагонали нет, но сумма не диагональных элементов строки больше ii элемента </p>
+     * <p> 3 если дулей в диагонали нет, но сумма не диагональных элементов строки равна ii элемента </p>
      */
-    private boolean checkMatrix() {
+    private int checkMatrix() {
         double[] lineSums = getAbsLinesSumsWithoutLast(matrix);
         boolean isEnough = false;
         for (int i = 0; i < mHeight; i++) {
             if (isZero(matrix[i][i])) {
                 int nonNull = findNonNullElementInColumn(i);
                 if ((nonNull != -1)) swapLines(i, nonNull);
-                else return false;
+                else return 1;
             }
             if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) isEnough = true;
         }
-        return isEnough;
+        for (int i = 0; i < mHeight; i++) {
+            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) return 2;
+        }
+        return isEnough ? 0 : 3;
     }
 
     /**

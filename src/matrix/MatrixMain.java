@@ -16,9 +16,10 @@ public class MatrixMain {
      */
     public static void main(final String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: matrix <input file path> [output file path]");
+            printHelp();
             return;
         }
+        if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-h"))) printHelp();
         String inputFilePath;
         String outputFilePath = null;
         inputFilePath = getAbsolutePath(args[0]);
@@ -31,13 +32,14 @@ public class MatrixMain {
             System.out.println();
 
             int tmp = matrix.getIterationSolution(new double[matrix.getmHeight()]) ? 0 : 1;
-            if (tmp != 0) tmp = matrix.createTriangleMatrix();
-            matrix.print();
-            System.out.println();
+            if (tmp != 0) {
+                tmp = matrix.createTriangleMatrix();
+                matrix.print();
+                System.out.println();
 
-            if (tmp == 0) matrix.getGaussSolution();
-            else System.out.println("Решений нет или бесконечно много!");
-
+                if (tmp == 0) matrix.getGaussSolution();
+                else System.out.println("Решений нет или бесконечно много!");
+            }
 
             if (outputFilePath != null) matrix.printToFile(outputFilePath);
         } catch (IOException | IllegalArgumentException e) {
@@ -65,5 +67,18 @@ public class MatrixMain {
             String workingDirectory = System.getProperty("user.dir");
             return workingDirectory.endsWith("/") ? workingDirectory + path : workingDirectory + "/" + path;
         }
+    }
+
+    private static void printHelp() {
+        System.out.println("""
+                Usage:
+                matrix -h[elp]
+                matrix <input file path> [output file path]
+                Structure of input file:
+                * First number \t\t- height of matrix
+                * Second number \t- length of matrix
+                * Third number \t\t- quality of zero (for Gauss method)
+                * Fourth number \t- maximum number of iterations (for Iterative method)
+                """);
     }
 }
