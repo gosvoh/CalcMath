@@ -19,15 +19,15 @@ public class Matrix {
     /**
      * Размерность матрицы, высота.
      */
-    private int sizeY;
+    private int        sizeY;
     /**
      * Размерность матрицы, длина.
      */
-    private int sizeX;
+    private int        sizeX;
     /**
      * Условный ноль.
      */
-    private double quality;
+    private double     quality;
 
     /**
      * Конструктор объекта матрицы.
@@ -54,6 +54,7 @@ public class Matrix {
      * Получить сумму элементов указанной строки.
      *
      * @param matrix матрица для подсчёта сумм столбцов
+     *
      * @return массив сумм элементов строки
      */
     private static double[] getLinesSums(final double[][] matrix) {
@@ -67,6 +68,7 @@ public class Matrix {
      * Получить сумму элементов указанной строки без последнего элемента.
      *
      * @param matrix матрица для подсчёта сумм столбцов
+     *
      * @return массив сумм элементов строки
      */
     private static double[] getLinesSumsWithoutLast(final double[][] matrix) {
@@ -101,6 +103,7 @@ public class Matrix {
      * разделяем её на элементы и вносим в массив.
      *
      * @param path путь к файлу с матрицей
+     *
      * @throws FileNotFoundException    выбрасывается в том случае,
      *                                  если файл не был найден
      * @throws IllegalArgumentException если количество строк не совпадает с
@@ -202,6 +205,7 @@ public class Matrix {
      * Вывести матрицу в файл.
      *
      * @param outputFilePath путь до файла для вывода матрицы
+     *
      * @throws IOException выбрасывается в том случае,
      *                     если нет доступа к записи в указанный файл
      */
@@ -227,44 +231,46 @@ public class Matrix {
     public int createTriangleMatrix() {
         for (int k = 0; k < sizeY; k++) {
             if (isZero(matrix[k][k])) {
-                int nonNull = findNonNullElement(k);
+                int nonNull = findNonNullElementInColumn(k);
                 if ((nonNull != -1)) swapLines(k, nonNull);
                 else return 1;
             }
 
-            for (int i = k + 1; i < sizeY; i++) {
-                calculateCoefficients(i, i, k);
-            }
+            for (int i = k + 1; i < sizeY; i++) calculateCoefficients(i, k);
         }
 
-        if (isZero(matrix[sizeY - 1][sizeX - 1]))
-            return 1;
-        if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2]))
-            return 2;
+        if (isZero(matrix[sizeY - 1][sizeX - 1])) return 1;
+        if (isZero(matrix[sizeY - 1][sizeX - 1]) && isZero(matrix[sizeY - 1][sizeX - 2])) return 2;
 
         return 0;
     }
 
-    private int findNonNullElement(int currentLine) {
-        for (int i = currentLine + 1; i < sizeY; i++)
-            if (!isZero(matrix[i][currentLine])) return i;
+    /**
+     * Найти ненулевой элемент в указанном столбце, начиная со следующей строки.
+     *
+     * @param currentColumn столбец для поиска
+     *
+     * @return индекс элемента, если он не найден, то -1
+     */
+    private int findNonNullElementInColumn(int currentColumn) {
+        for (int i = currentColumn + 1; i < sizeY; i++)
+            if (!isZero(matrix[i][currentColumn])) return i;
         return -1;
     }
 
     /**
-     * Вычислить коэффициенты, начиная с указанной строки.
+     * Вычислить коэффициенты, начиная с указанной строки и указанного столбца.
      *
-     * @param currentLine начальная строка
+     * @param currentLine текущая строка
+     * @param outsideLoopK столбец и строка во внешнем цикле
      */
-    private void calculateCoefficients(int currentLine, int currentColumn, int workingLine) {
-        double multiplier = matrix[currentLine][workingLine] / matrix[workingLine][workingLine];
-        matrix[currentLine][workingLine] = 0;
-        for (int j = currentColumn; j < sizeX; j++) {
-            matrix[currentLine][j] -= multiplier * matrix[workingLine][currentColumn];
-            if (isZero(matrix[currentColumn][j])) matrix[currentColumn][j] = 0;
+    private void calculateCoefficients(int currentLine, int outsideLoopK) {
+        double multiplier = matrix[currentLine][outsideLoopK] / matrix[outsideLoopK][outsideLoopK];
+        matrix[currentLine][outsideLoopK] = 0;
+        for (int j = outsideLoopK + 1; j < sizeX; j++) {
+            matrix[currentLine][j] -= multiplier * matrix[outsideLoopK][j];
+            if (isZero(matrix[currentLine][j])) matrix[currentLine][j] = 0;
         }
-        print();
-        System.out.println();
     }
 
     /**
@@ -287,6 +293,7 @@ public class Matrix {
      * Проверка числа на условный ноль.
      *
      * @param value число для проверки
+     *
      * @return true, если -quality < value < quality
      */
     private boolean isZero(final double value) {
@@ -305,10 +312,12 @@ public class Matrix {
         matrix[line2] = tmpLine;
     }
 
+    //TODO Итерационный метод решения матрицы
     public void getIterationSolution() {
 
     }
 
+    //TODO Итерационный метод решения матрицы
     private boolean checkDiagonal() {
         for (int i = 0; i < sizeY; i++) {
             if (isZero(matrix[i][i])) {
