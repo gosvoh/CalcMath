@@ -132,6 +132,7 @@ public class Matrix {
                 for (int j = 0; j < mLength; j++) matrix[i][j] = Double.parseDouble(strings[j].replace(',', '.'));
             } catch (NumberFormatException e) {
                 System.out.println(e.getMessage());
+                scanner.close();
                 System.exit(1);
             }
         }
@@ -211,8 +212,7 @@ public class Matrix {
      *                     если нет доступа к записи в указанный файл
      */
     public void printToFile(final String outputFilePath) throws IOException {
-        File outputFile = new File(outputFilePath);
-        FileWriter fileWriter = new FileWriter(outputFile);
+        FileWriter fileWriter = new FileWriter(outputFilePath);
         fileWriter.write(matrix.length + " " + matrix[0].length + "\n");
         for (double[] doubles : matrix) {
             for (double aDouble : doubles)
@@ -224,6 +224,8 @@ public class Matrix {
 
     /**
      * Преобразовать нашу матрицу в треугольную.
+     * <p> Если на диагонали присутствуют нули,
+     * то попытаться от них избавиться, путём перестановки строк. </p>
      *
      * @return <p> 0 - если матрица решаема </p>
      * <p> 1 - если матрица вырожденная </p>
@@ -315,6 +317,12 @@ public class Matrix {
 
     /**
      * Вывести решение матрицы итерационным методом.
+     * <p> Если достаточное условие сходимости не выполняется только частично,
+     * то пробуем решить матрицу с контролем: </p>
+     * <p> Даём {@link #maxControlIterations} попыток на решение.
+     * Если новые приближения больше или равны старым 40% раз подряд,
+     * то считаем решение успешным и выполняем оставшиеся итерации без контроля,
+     * иначе считаем контроль проваленным.</p>
      *
      * @param initApproximations начальные приближения
      *
@@ -337,10 +345,6 @@ public class Matrix {
                 int counter = 0;
                 double[] oldApproximations = new double[initApproximations.length];
                 int i;
-                /*
-                 * Даём maxControlIterations попыток на решение. Если новые приближения больше или равны старым 40% раз подряд,
-                 * то считаем решение успешным и выполняем оставшиеся итерации без контроля, иначе считаем контроль проваленным.
-                 */
                 for (i = 0; i < maxControlIterations; i++) {
                     calculateNewApproximations(initApproximations);
                     if (Arrays.compare(oldApproximations, initApproximations) >= 0) counter++;
@@ -371,7 +375,7 @@ public class Matrix {
 
     /**
      * Проверить матрицу на достаточное условие сходимости.
-     * Если на диагонали есть ноль, то попытаться убрать его с диагонали.
+     * Если на диагонали есть ноль, то попытаться убрать его, путём перестановки строк.
      *
      * @return <p> 0 если условие выполняется </p>
      * <p> 1 если не удалось избавиться от нулей в диагонали </p>
@@ -395,20 +399,12 @@ public class Matrix {
         return isEnough ? 0 : 3;
     }
 
-    /**
-     * Получить высоту матрицы.
-     *
-     * @return высота матрицы
-     */
+    /** @return высота матрицы */
     public int getmHeight() {
         return mHeight;
     }
 
-    /**
-     * Получить длину матрицы.
-     *
-     * @return длина матрицы
-     */
+    /** @return длина матрицы */
     public int getmLength() {
         return mLength;
     }
