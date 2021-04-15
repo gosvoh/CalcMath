@@ -391,10 +391,12 @@ public class Matrix {
                 if ((nonNull != -1)) swapLines(i, nonNull);
                 else return 1;
             }
-            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) isEnough = true;
+            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i])) && !isZero(lineSums[i] - Math.abs(matrix[i][i])))
+                isEnough = true;
         }
         for (int i = 0; i < mHeight; i++) {
-            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) return 2;
+            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i])) && !isZero(lineSums[i] - Math.abs(matrix[i][i])))
+                return 2;
         }
         return isEnough ? 0 : 3;
     }
