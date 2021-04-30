@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -37,7 +38,7 @@ public class Matrix {
     /**
      * Максимальное количество итераций для итерационного метода.
      */
-    private int maxIterations;
+    private int maxIterations = 10;
 
     /**
      * Конструктор объекта матрицы.
@@ -290,13 +291,16 @@ public class Matrix {
         switch (tmp) {
             /* Решение без контроля */
             case 0 -> {
+                System.out.println("ДУС полностью выполняется, решаем...");
                 calculateFirstApproximation(initApproximations);
                 for (int i = 1; i < maxIterations; i++) if (calculateNewApproximations(initApproximations)) break;
                 Utils.print(initApproximations);
                 System.out.println();
             }
             /* Решение с контролем */
-            case 2 -> {
+            case 1 -> {
+                System.out.println("ДУС выполняется частично, отслеживается " +
+                        MAX_CONTROL_ITERATIONS + " попыток решения с отслеживанием монотонности...");
                 int i;
                 calculateFirstApproximation(initApproximations);
                 for (i = 1; i < MAX_CONTROL_ITERATIONS; i++) {
@@ -376,14 +380,14 @@ public class Matrix {
 
             if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) {
                 int tmp = getMaxDifferenceIndex(lineSums, i);
-                if (tmp != -1) {
+                if (tmp != -1 && (matrix[i][tmp] > matrix[tmp][tmp]) && (matrix[i][i] < matrix[tmp][i])) {
                     Utils.swapLines(matrix, i, tmp);
+                    Utils.swapLines(lineSums, i, tmp);
                     if (checkMatrix(i) == 2) return 2;
-                }
+                } else return 2;
             }
 
             if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) DUS = true;
-
         }
 
         return DUS ? 0 : 1;
@@ -392,7 +396,7 @@ public class Matrix {
     private int getMaxDifferenceIndex(double[] lineSums, int line) {
         double maxDiff = lineSums[line] - Math.abs(matrix[line][line]);
         int maxDiffIndex = 0;
-        for (int j = 0; j < mLength; j++) {
+        for (int j = 0; j < mLength - 1; j++) {
             double tmp = lineSums[line] - Math.abs(matrix[line][j]);
             if (tmp < maxDiff) {
                 maxDiff = tmp;

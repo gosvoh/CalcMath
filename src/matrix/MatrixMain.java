@@ -33,6 +33,7 @@ public class MatrixMain {
 
             int tmp = matrix.getIterationSolution(new double[matrix.getHeight()]) ? 0 : 1;
             if (tmp != 0) {
+                System.out.println("Систему невозможно решить итерационным методом, применяется метод Гаусса...");
                 tmp = matrix.createTriangleMatrix();
                 matrix.print();
                 System.out.println();
