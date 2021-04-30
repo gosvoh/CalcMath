@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -14,7 +13,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
     /** Максимальное количество итераций для решения с контролем */
-    private final int        maxControlIterations = 10;
+    private final int        MAX_CONTROL_ITERATIONS = 10;
     /** Сама матрица для отображения. */
     private       double[][] matrix;
     /** Размерность матрицы, высота. */
@@ -76,7 +75,7 @@ public class Matrix {
      *
      * @return массив сумм элементов строки
      */
-    private static double[] getAbsLinesSumsWithoutLast(final double[][] matrix) {
+    private static double[] getAbsLinesSumsWithoutLast(double[][] matrix) {
         double[] ret = new double[matrix.length];
         for (int i = 0; i < matrix.length; i++)
             for (int j = 0; j < matrix[i].length - 1; j++) ret[i] += Math.abs(matrix[i][j]);
@@ -227,9 +226,9 @@ public class Matrix {
      * <p> Если на диагонали присутствуют нули,
      * то попытаться от них избавиться, путём перестановки строк. </p>
      *
-     * @return <p> 0 - если матрица решаема </p>
-     * <p> 1 - если матрица вырожденная </p>
-     * <p> 2 - если имеется бесконечно много решений </p>
+     * @return <p> <b>0</b> - если матрица решаема </p>
+     * <p> <b>1</b> - если матрица вырожденная </p>
+     * <p> <b>2</b> - если имеется бесконечно много решений </p>
      */
     public int createTriangleMatrix() {
         for (int k = 0; k < mHeight; k++) {
@@ -311,15 +310,19 @@ public class Matrix {
         double[] tmpLine = matrix[line1];
         matrix[line1] = matrix[line2];
         matrix[line2] = tmpLine;
-        print();
-        System.out.println();
+    }
+
+    private void swapLines(double[] array, final int line1, final int line2) {
+        double tmpLine = array[line1];
+        array[line1] = array[line2];
+        array[line2] = tmpLine;
     }
 
     /**
      * Вывести решение матрицы итерационным методом.
      * <p> Если достаточное условие сходимости не выполняется только частично,
      * то пробуем решить матрицу с контролем: </p>
-     * <p> Даём {@link #maxControlIterations} попыток на решение.
+     * <p> Даём {@link #MAX_CONTROL_ITERATIONS} попыток на решение.
      * Если новые приближения больше или равны старым 40% раз подряд,
      * то считаем решение успешным и выполняем оставшиеся итерации без контроля,
      * иначе считаем контроль проваленным.</p>
@@ -329,30 +332,28 @@ public class Matrix {
      * @return true, если матрица решена, иначе false
      */
     public boolean getIterationSolution(double[] initApproximations) {
-        int tmp = checkMatrix();
+        int tmp = checkMatrix(0);
 
+        int[] counter = {0};
         /* Требуется версия Java не ниже 14 */
         switch (tmp) {
             /* Решение без контроля */
             case 0 -> {
-                for (int i = 0; i < maxIterations; i++) calculateNewApproximations(initApproximations);
+                calculateFirstApproximation(initApproximations);
+                for (int i = 1; i < maxIterations; i++) calculateNewApproximations(initApproximations);
                 print(initApproximations);
                 System.out.println();
             }
             case 1, 2 -> { return false;}
             /* Решение с контролем */
             case 3 -> {
-                int counter = 0;
-                double[] oldApproximations = new double[initApproximations.length];
                 int i;
-                for (i = 0; i < maxControlIterations; i++) {
-                    calculateNewApproximations(initApproximations);
-                    if (Arrays.compare(oldApproximations, initApproximations) >= 0) counter++;
-                    else counter = 0;
-                    if (counter == maxControlIterations * 0.4) break;
-                    System.arraycopy(initApproximations, 0, oldApproximations, 0, initApproximations.length);
+                calculateFirstApproximation(initApproximations);
+                for (i = 1; i < MAX_CONTROL_ITERATIONS; i++) {
+                    calculateNewApproximations(initApproximations, counter);
+                    if (counter[0] == MAX_CONTROL_ITERATIONS * 0.4) break;
                 }
-                if (counter != 4) return false;
+                if (counter[0] != MAX_CONTROL_ITERATIONS * 0.4) return false;
                 for (; i < maxIterations; i++) calculateNewApproximations(initApproximations);
             }
         }
@@ -366,9 +367,29 @@ public class Matrix {
      * @param approximations предыдущие приближения
      */
     private void calculateNewApproximations(double[] approximations) {
+        calculateNewApproximations(approximations, new int[]{-1});
+    }
+
+    private void calculateNewApproximations(double[] approximations, int[] counter) {
+        boolean check = true;
+        for (int i = 0; i < approximations.length; i++) {
+            double newApproximation = matrix[i][mLength - 1];
+            for (int j = 0; j < mLength - 1; j++)
+                if (i != j)
+                    newApproximation -= matrix[i][j] * approximations[j];
+            newApproximation /= matrix[i][i];
+            if (Math.abs(newApproximation) < Math.abs(approximations[i])) approximations[i] = newApproximation;
+            else check = false;
+        }
+        if (check) counter[0]++;
+    }
+
+    private void calculateFirstApproximation(double[] approximations) {
         for (int i = 0; i < approximations.length; i++) {
             approximations[i] = matrix[i][mLength - 1];
-            for (int j = 0; j < mLength - 1; j++) if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
+            for (int j = 0; j < mLength - 1; j++)
+                if (i != j)
+                    approximations[i] -= matrix[i][j] * approximations[j];
             approximations[i] /= matrix[i][i];
         }
     }
@@ -377,37 +398,55 @@ public class Matrix {
      * Проверить матрицу на достаточное условие сходимости.
      * Если на диагонали есть ноль, то попытаться убрать его, путём перестановки строк.
      *
-     * @return <p> 0 если условие выполняется </p>
-     * <p> 1 если не удалось избавиться от нулей в диагонали </p>
-     * <p> 2 если нулей в диагонали нет, но сумма не диагональных элементов строки больше ii элемента </p>
-     * <p> 3 если дулей в диагонали нет, но сумма не диагональных элементов строки равна ii элемента </p>
+     * @return <p> <b>0</b> если условие выполняется </p>
+     * <p> <b>1</b> если ДУС выполняется частично </p>
+     * <p> <b>2</b> если ДУС не выполняется </p>
      */
-    private int checkMatrix() {
+    private int checkMatrix(int startingLine) {
         double[] lineSums = getAbsLinesSumsWithoutLast(matrix);
-        boolean isEnough = false;
-        for (int i = 0; i < mHeight; i++) {
+        boolean DUS = true;
+        for (int i = startingLine; i < mHeight; i++) {
             if (isZero(matrix[i][i])) {
                 int nonNull = findNonNullElementInColumn(i);
-                if ((nonNull != -1)) swapLines(i, nonNull);
-                else return 1;
+                if ((nonNull != -1)) {
+                    swapLines(i, nonNull);
+                    swapLines(lineSums, i, nonNull);
+                } else return 2;
             }
-            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i])) && !isZero(lineSums[i] - Math.abs(matrix[i][i])))
-                isEnough = true;
+
+            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) {
+                int tmp = getMaxDifferenceIndex(lineSums, i);
+                if (tmp != -1) {
+                    swapLines(i, tmp);
+                    if (checkMatrix(i) == 2) return 2;
+                }
+            }
+
         }
-        for (int i = 0; i < mHeight; i++) {
-            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i])) && !isZero(lineSums[i] - Math.abs(matrix[i][i])))
-                return 2;
+
+        return 0;
+    }
+
+    private int getMaxDifferenceIndex(double[] lineSums, int line) {
+        double maxDiff = lineSums[line] - Math.abs(matrix[line][line]);
+        int maxDiffIndex = 0;
+        for (int j = 0; j < mLength; j++) {
+            double tmp = lineSums[line] - Math.abs(matrix[line][j]);
+            if (tmp < maxDiff) {
+                maxDiff = tmp;
+                maxDiffIndex = j;
+            }
         }
-        return isEnough ? 0 : 3;
+        return line < maxDiffIndex ? maxDiffIndex : -1;
     }
 
     /** @return высота матрицы */
-    public int getmHeight() {
+    public int getHeight() {
         return mHeight;
     }
 
     /** @return длина матрицы */
-    public int getmLength() {
+    public int getLength() {
         return mLength;
     }
 }

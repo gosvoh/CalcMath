@@ -31,7 +31,7 @@ public class MatrixMain {
             matrix.print();
             System.out.println();
 
-            int tmp = matrix.getIterationSolution(new double[matrix.getmHeight()]) ? 0 : 1;
+            int tmp = matrix.getIterationSolution(new double[matrix.getHeight()]) ? 0 : 1;
             if (tmp != 0) {
                 tmp = matrix.createTriangleMatrix();
                 matrix.print();
