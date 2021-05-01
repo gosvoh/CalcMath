@@ -1,5 +1,9 @@
 package utils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Utils {
 
     public static double roundDoubleTo(double value, double quality) {
@@ -75,4 +79,19 @@ public class Utils {
         array[line2] = tmpLine;
     }
 
+    private static final Map<Integer, ArrayList<Double>> multiMap = new HashMap<>();
+
+    public static void addValueToMultiMap(Integer power, Double value) {
+        ArrayList<Double> tempList;
+        if (multiMap.containsKey(power)) {
+            tempList = multiMap.get(power);
+            if (tempList == null) tempList = new ArrayList<>();
+        } else tempList = new ArrayList<>();
+        tempList.add(value);
+        multiMap.put(power, tempList);
+    }
+
+    public static Map<Integer, ArrayList<Double>> getMultiMap() {
+        return multiMap;
+    }
 }
