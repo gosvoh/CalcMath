@@ -1,5 +1,7 @@
 package matrix;
 
+import utils.MatrixUtils;
+
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -29,20 +31,19 @@ public class MatrixMain {
             matrix.init(inputFilePath);
 
             matrix.print();
-            System.out.println();
 
             int tmp = matrix.getIterationSolution(new double[matrix.getHeight()]) ? 0 : 1;
             if (tmp != 0) {
                 System.out.println("Систему невозможно решить итерационным методом, применяется метод Гаусса...");
+                System.out.println("Треугольная матрица:");
                 tmp = matrix.createTriangleMatrix();
-                matrix.print();
-                System.out.println();
+                System.out.println(matrix);
 
                 if (tmp == 0) matrix.getGaussSolution();
                 else System.out.println("Решений нет или бесконечно много!");
             }
 
-            if (outputFilePath != null) matrix.printToFile(outputFilePath);
+            if (outputFilePath != null) MatrixUtils.printToFile(outputFilePath, matrix.getMatrix());
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
