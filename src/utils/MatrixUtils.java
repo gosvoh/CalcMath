@@ -2,9 +2,6 @@ package utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MatrixUtils {
 
@@ -70,8 +67,8 @@ public class MatrixUtils {
      * Поменять местами указанные строки в указанной матрице.
      *
      * @param matrix матрица для замены строк
-     * @param line1 первая строка для обмена
-     * @param line2 вторая строка для обмена
+     * @param line1  первая строка для обмена
+     * @param line2  вторая строка для обмена
      */
     public static void swapLines(double[][] matrix, final int line1, final int line2) {
         double[] tmpLine = matrix[line1];
@@ -83,26 +80,6 @@ public class MatrixUtils {
         double tmpLine = array[line1];
         array[line1] = array[line2];
         array[line2] = tmpLine;
-    }
-
-    private static final Map<Integer, ArrayList<Double>> multiMap = new HashMap<>();
-
-    public static void addValueToMultiMap(Integer power, Double value) {
-        ArrayList<Double> tempList;
-        if (multiMap.containsKey(power)) {
-            tempList = multiMap.get(power);
-            if (tempList == null) tempList = new ArrayList<>();
-        } else tempList = new ArrayList<>();
-        tempList.add(value);
-        multiMap.put(power, tempList);
-    }
-
-    public static void clearMultiMap() {
-        multiMap.clear();
-    }
-
-    public static Map<Integer, ArrayList<Double>> getMultiMap() {
-        return multiMap;
     }
 
     /**
@@ -160,7 +137,7 @@ public class MatrixUtils {
      * Вывести матрицу в файл.
      *
      * @param outputFilePath путь до файла для вывода матрицы
-     * @param matrix - матрица для вывода
+     * @param matrix         - матрица для вывода
      *
      * @throws IOException выбрасывается в том случае,
      *                     если нет доступа к записи в указанный файл

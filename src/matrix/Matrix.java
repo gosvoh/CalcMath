@@ -4,6 +4,7 @@ import utils.MatrixUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,8 @@ public class Matrix {
     private       double     quality;
     /** Максимальное количество итераций для итерационного метода. */
     private       int        maxIterations          = 10;
+
+    private int[] shortMatrix;
 
     /** Конструктор объекта матрицы. */
     public Matrix() {
@@ -175,7 +178,12 @@ public class Matrix {
      * @return true, если матрица решена, иначе false
      */
     public boolean getIterationSolution(double[] initApproximations) {
+        shortMatrix = new int[matrix.length];
+        Arrays.fill(shortMatrix, -1);
+
         int tmp = checkMatrix(null);
+
+        for (int i = 0; i < matrix.length; i++) MatrixUtils.swapLines(matrix, i, shortMatrix[i]);
         MatrixUtils.print(matrix);
 
         int[] counters = {0, 0};
@@ -256,30 +264,23 @@ public class Matrix {
      * <p> <b>2</b> если ДУС не выполняется </p>
      */
     private int checkMatrix(double[] lineSums) {
-        if (lineSums == null)
-            lineSums = MatrixUtils.getAbsLinesSumsWithoutLast(matrix);
+        if (lineSums == null) lineSums = MatrixUtils.getAbsLinesSumsWithoutLast(matrix);
         boolean DUS = false;
-        for (int i = 0; i < size; i++) {
-            if (isZero(matrix[i][i])) {
-                int nonNull = findNonNullElementInColumn(i);
-                if ((nonNull != -1)) {
-                    MatrixUtils.swapLines(matrix, i, nonNull);
-                    MatrixUtils.swapLines(lineSums, i, nonNull);
-                } else return 2;
-            }
 
+        for (int i = 0; i < size; i++) {
             if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) {
                 int tmp = getMaxDifferenceIndex(lineSums, i);
-                if (tmp != -1 && (matrix[i][tmp] > matrix[tmp][tmp]) && (matrix[i][i] > matrix[tmp][i])) {
-                    MatrixUtils.swapLines(matrix, i, tmp);
-                    MatrixUtils.swapLines(lineSums, i, tmp);
-                    int check = checkMatrix(lineSums);
-                    if (check == 2) return 2;
-                    if (check == 0) DUS = true;
-                } else return 2;
+                if (tmp == -1 || tmp == getMaxDifferenceIndex(lineSums, tmp)) return 2;
+                shortMatrix[i] = tmp;
             }
 
-            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) DUS = true;
+            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) {
+                DUS = true;
+                shortMatrix[i] = i;
+            }
+
+            if (Math.abs(matrix[i][i]) == (lineSums[i] - Math.abs(matrix[i][i])))
+                shortMatrix[i] = i;
         }
 
         return DUS ? 0 : 1;
