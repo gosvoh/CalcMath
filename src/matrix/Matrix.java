@@ -4,7 +4,6 @@ import utils.MatrixUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -200,49 +199,32 @@ public class Matrix {
         for (int i = 0; i < matrix.length; i++) matrix[i] = tempMatrix[shortMatrix[i]];
         print();
 
-        double max;
         int counter = 0;
-        /* Требуется версия Java не ниже 14 */
-        switch (tmp) {
-            /* Решение без контроля */
-            case 0 -> {
-                System.out.println("ДУС полностью выполняется, решаем...");
-                calculateNewApproximations(initApproximations);
-                int i = 1;
-                for (; i < maxIterations; i++) {
-                    max = calculateNewApproximations(initApproximations);
-                    if (isZero(max)) break;
-                }
-                System.out.printf("Приближения на %d итерации:\n", i);
-                MatrixUtils.print(initApproximations);
-                System.out.println();
+        int i;
+        if (tmp == 1) {
+            System.out.println("ДУС выполняется частично, отслеживается " + MAX_CONTROL_ITERATIONS + " попыток решения с отслеживанием монотонности...");
+            i = 1;
+            double max = calculateNewApproximations(initApproximations);
+            for (; i < MAX_CONTROL_ITERATIONS; i++) {
+                double temp = calculateNewApproximations(initApproximations);
+                if (max > temp) {
+                    max = temp;
+                    counter++;
+                    if (isZero(max) || counter == 4) break;
+                } else counter = 0;
             }
-            /* Решение с контролем */
-            case 1 -> {
-                System.out.println("ДУС выполняется частично, отслеживается " + MAX_CONTROL_ITERATIONS + " попыток решения с отслеживанием монотонности...");
-                int i = 1;
-                max = calculateNewApproximations(initApproximations);
-                for (; i < MAX_CONTROL_ITERATIONS; i++) {
-                    double temp = calculateNewApproximations(initApproximations);
-                    if (max > temp) {
-                        max = temp;
-                        counter++;
-                        if (isZero(max) || counter == 4) break;
-                    } else counter = 0;
-                }
-                if (counter != 4) return false;
-                for (; i < maxIterations; i++) {
-                    max = calculateNewApproximations(initApproximations);
-                    if (isZero(max)) break;
-                }
-
-                System.out.printf("Приближения на %d итерации:\n", i);
-                MatrixUtils.print(initApproximations);
-                System.out.println();
-            }
+            if (counter != 4) return false;
         }
+        calcWithoutControl(0, initApproximations);
 
         return true;
+    }
+
+    private void calcWithoutControl(int i, double[] initApproximations) {
+        for (; i < maxIterations; i++) if (isZero(calculateNewApproximations(initApproximations))) break;
+        System.out.printf("Приближения на %d итерации:\n", i);
+        MatrixUtils.print(initApproximations);
+        System.out.println();
     }
 
     /**
@@ -256,12 +238,11 @@ public class Matrix {
         for (int i = 0; i < approximations.length; i++) {
             approx = approximations[i];
             approximations[i] = matrix[i][size];
-            for (int j = 0; j < size; j++)
-                if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
+            for (int j = 0; j < size; j++) if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
             approximations[i] /= matrix[i][i];
             max = Math.max(Math.abs(approximations[i] - approx), Math.abs(max));
         }
-        return MatrixUtils.roundDoubleTo(max, quality);
+        return max;
     }
 
     /**
