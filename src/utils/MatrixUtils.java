@@ -82,6 +82,12 @@ public class MatrixUtils {
         array[line2] = tmpLine;
     }
 
+    public static void swapLines(int[] array, final int line1, final int line2) {
+        int tmpLine = array[line1];
+        array[line1] = array[line2];
+        array[line2] = tmpLine;
+    }
+
     /**
      * Метод, где происходит реальная сортировка.
      *

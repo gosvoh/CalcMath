@@ -13,20 +13,32 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"FieldCanBeLocal", "CheckStyle"})
 public class Matrix {
-    /** Максимальное количество итераций для решения с контролем */
-    private final int        MAX_CONTROL_ITERATIONS = 10;
-    /** Сама матрица для отображения. */
-    private       double[][] matrix;
-    /** Размерность матрицы. */
-    private       int        size;
-    /** Условный ноль. */
-    private       double     quality;
-    /** Максимальное количество итераций для итерационного метода. */
-    private       int        maxIterations          = 10;
+    /**
+     * Максимальное количество итераций для решения с контролем
+     */
+    private final int MAX_CONTROL_ITERATIONS = 10;
+    /**
+     * Сама матрица для отображения.
+     */
+    private double[][] matrix;
+    /**
+     * Размерность матрицы.
+     */
+    private int size;
+    /**
+     * Условный ноль.
+     */
+    private double quality;
+    /**
+     * Максимальное количество итераций для итерационного метода.
+     */
+    private int maxIterations = 10;
 
     private int[] shortMatrix;
 
-    /** Конструктор объекта матрицы. */
+    /**
+     * Конструктор объекта матрицы.
+     */
     public Matrix() {
         this.matrix = null;
         this.size = 0;
@@ -42,7 +54,9 @@ public class Matrix {
         for (int i = 0; i < size; i++) matrix[i] = new double[size + 1];
     }
 
-    /** Вывести матрицу на экран. */
+    /**
+     * Вывести матрицу на экран.
+     */
     public void print() {
         MatrixUtils.print(matrix);
         System.out.println();
@@ -55,7 +69,6 @@ public class Matrix {
      * разделяем её на элементы и вносим в массив.
      *
      * @param path путь к файлу с матрицей
-     *
      * @throws FileNotFoundException    выбрасывается в том случае,
      *                                  если файл не был найден
      * @throws IllegalArgumentException если количество строк не совпадает с
@@ -115,7 +128,6 @@ public class Matrix {
      * Найти ненулевой элемент в указанном столбце, начиная со следующей строки.
      *
      * @param currentColumn столбец для поиска
-     *
      * @return индекс элемента, если он не найден, то -1
      */
     private int findNonNullElementInColumn(int currentColumn) {
@@ -139,7 +151,9 @@ public class Matrix {
         }
     }
 
-    /** Вывести решение методом Гаусса. */
+    /**
+     * Вывести решение методом Гаусса.
+     */
     public void getGaussSolution() {
         double[] ret = new double[size];
 
@@ -157,7 +171,6 @@ public class Matrix {
      * Проверка числа на условный ноль.
      *
      * @param value число для проверки
-     *
      * @return true, если |value| < quality
      */
     private boolean isZero(final double value) {
@@ -174,43 +187,58 @@ public class Matrix {
      * иначе считаем контроль проваленным.</p>
      *
      * @param initApproximations начальные приближения
-     *
      * @return true, если матрица решена, иначе false
      */
     public boolean getIterationSolution(double[] initApproximations) {
         shortMatrix = new int[matrix.length];
-        Arrays.fill(shortMatrix, -1);
+        for (int i = 0; i < shortMatrix.length; i++) shortMatrix[i] = i;
 
-        int tmp = checkMatrix(null);
+        int tmp = checkMatrix(MatrixUtils.getAbsLinesSumsWithoutLast(matrix));
+        if (tmp == 2) return false;
 
-        for (int i = 0; i < matrix.length; i++) MatrixUtils.swapLines(matrix, i, shortMatrix[i]);
-        MatrixUtils.print(matrix);
+        double[][] tempMatrix = matrix.clone();
+        for (int i = 0; i < matrix.length; i++) matrix[i] = tempMatrix[shortMatrix[i]];
+        print();
 
-        int[] counters = {0, 0};
+        double max;
+        int counter = 0;
         /* Требуется версия Java не ниже 14 */
         switch (tmp) {
             /* Решение без контроля */
             case 0 -> {
                 System.out.println("ДУС полностью выполняется, решаем...");
-                calculateFirstApproximation(initApproximations);
-                for (int i = 1; i < maxIterations; i++) if (calculateNewApproximations(initApproximations)) break;
+                calculateNewApproximations(initApproximations);
+                int i = 1;
+                for (; i < maxIterations; i++) {
+                    max = calculateNewApproximations(initApproximations);
+                    if (isZero(max)) break;
+                }
+                System.out.printf("Приближения на %d итерации:\n", i);
                 MatrixUtils.print(initApproximations);
                 System.out.println();
             }
             /* Решение с контролем */
             case 1 -> {
                 System.out.println("ДУС выполняется частично, отслеживается " + MAX_CONTROL_ITERATIONS + " попыток решения с отслеживанием монотонности...");
-                int i;
-                calculateFirstApproximation(initApproximations);
-                for (i = 1; i < MAX_CONTROL_ITERATIONS; i++) {
-                    calculateNewApproximations(initApproximations, counters);
-                    if (counters[0] == 4) break;
+                int i = 1;
+                max = calculateNewApproximations(initApproximations);
+                for (; i < MAX_CONTROL_ITERATIONS; i++) {
+                    double temp = calculateNewApproximations(initApproximations);
+                    if (max > temp) {
+                        max = temp;
+                        counter++;
+                        if (isZero(max) || counter == 4) break;
+                    } else counter = 0;
                 }
-                if (counters[0] != 4) return false;
-                for (; i < maxIterations; i++) if (calculateNewApproximations(initApproximations)) break;
-            }
-            default -> {
-                return false;
+                if (counter != 4) return false;
+                for (; i < maxIterations; i++) {
+                    max = calculateNewApproximations(initApproximations);
+                    if (isZero(max)) break;
+                }
+
+                System.out.printf("Приближения на %d итерации:\n", i);
+                MatrixUtils.print(initApproximations);
+                System.out.println();
             }
         }
 
@@ -222,37 +250,18 @@ public class Matrix {
      *
      * @param approximations предыдущие приближения
      */
-    private boolean calculateNewApproximations(double[] approximations) {
-        return calculateNewApproximations(approximations, new int[]{-1, 0});
-    }
-
-    private boolean calculateNewApproximations(double[] approximations, int[] counters) {
-        boolean isLess = true;
-        boolean isSameValue = false;
+    private double calculateNewApproximations(double[] approximations) {
+        double max = 0;
+        double approx;
         for (int i = 0; i < approximations.length; i++) {
-            double newApproximation = matrix[i][size];
-            for (int j = 0; j < size; j++)
-                if (i != j) newApproximation -= matrix[i][j] * approximations[j];
-            newApproximation /= matrix[i][i];
-            newApproximation = MatrixUtils.roundDoubleTo(newApproximation, quality);
-            if (Math.abs(newApproximation) > Math.abs(approximations[i])) isLess = false;
-            if (newApproximation == approximations[i]) isSameValue = true;
-            approximations[i] = newApproximation;
-        }
-        if (isLess) counters[0]++;
-        if (isSameValue) counters[1]++;
-        else counters[1] = 0;
-        return counters[1] == 4;
-    }
-
-    private void calculateFirstApproximation(double[] approximations) {
-        for (int i = 0; i < approximations.length; i++) {
+            approx = approximations[i];
             approximations[i] = matrix[i][size];
             for (int j = 0; j < size; j++)
                 if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
             approximations[i] /= matrix[i][i];
-            approximations[i] = MatrixUtils.roundDoubleTo(approximations[i], quality);
+            max = Math.max(Math.abs(approximations[i] - approx), Math.abs(max));
         }
+        return MatrixUtils.roundDoubleTo(max, quality);
     }
 
     /**
@@ -264,23 +273,23 @@ public class Matrix {
      * <p> <b>2</b> если ДУС не выполняется </p>
      */
     private int checkMatrix(double[] lineSums) {
-        if (lineSums == null) lineSums = MatrixUtils.getAbsLinesSumsWithoutLast(matrix);
         boolean DUS = false;
 
         for (int i = 0; i < size; i++) {
-            if (Math.abs(matrix[i][i]) < (lineSums[i] - Math.abs(matrix[i][i]))) {
-                int tmp = getMaxDifferenceIndex(lineSums, i);
-                if (tmp == -1 || tmp == getMaxDifferenceIndex(lineSums, tmp)) return 2;
-                shortMatrix[i] = tmp;
+            if (isZero(matrix[shortMatrix[i]][i])) {
+                int nonNullRow = findNonNullElementInColumn(i);
+                if (nonNullRow == -1) return 2;
+                MatrixUtils.swapLines(shortMatrix, i, nonNullRow);
             }
 
-            if (Math.abs(matrix[i][i]) > (lineSums[i] - Math.abs(matrix[i][i]))) {
-                DUS = true;
-                shortMatrix[i] = i;
-            }
+            if (Math.abs(matrix[shortMatrix[i]][i]) > (lineSums[shortMatrix[i]] - Math.abs(matrix[shortMatrix[i]][i]))) DUS = true;
 
-            if (Math.abs(matrix[i][i]) == (lineSums[i] - Math.abs(matrix[i][i])))
-                shortMatrix[i] = i;
+            if (Math.abs(matrix[shortMatrix[i]][i]) < (lineSums[shortMatrix[i]] - Math.abs(matrix[shortMatrix[i]][i]))) {
+                int tmp = getMaxDifferenceIndex(lineSums, shortMatrix[i]);
+                if (tmp == -1) return 2;
+                MatrixUtils.swapLines(shortMatrix, i, tmp);
+                DUS = checkMatrix(lineSums) == 0 || DUS;
+            }
         }
 
         return DUS ? 0 : 1;
