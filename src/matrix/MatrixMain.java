@@ -26,8 +26,9 @@ public class MatrixMain {
         String outputFilePath = null;
         inputFilePath = getAbsolutePath(args[0]);
         if (args.length > 1) outputFilePath = getAbsolutePath(args[1]);
+
         try {
-            Matrix matrix = new Matrix();
+            /*Matrix matrix = new Matrix();
             matrix.init(inputFilePath);
 
             matrix.print();
@@ -43,7 +44,12 @@ public class MatrixMain {
                 else System.out.println("Решений нет или бесконечно много!");
             }
 
-            if (outputFilePath != null) MatrixUtils.printToFile(outputFilePath, matrix.getMatrix());
+            if (outputFilePath != null) MatrixUtils.printToFile(outputFilePath, matrix.getMatrix());*/
+
+            Polynomial polynomial = new Polynomial(inputFilePath);
+            Polynomial.print(polynomial.first);
+            Polynomial.print(polynomial.second);
+            Polynomial.print(Polynomial.add(polynomial.first, polynomial.second));
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
