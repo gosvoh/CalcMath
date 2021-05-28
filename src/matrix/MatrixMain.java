@@ -49,7 +49,7 @@ public class MatrixMain {
             Polynomial polynomial = new Polynomial(inputFilePath);
             Polynomial.print(polynomial.first);
             Polynomial.print(polynomial.second);
-            Polynomial.print(Polynomial.add(polynomial.first, polynomial.second));
+            Polynomial.print(Polynomial.mul(polynomial.first, polynomial.second));
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }

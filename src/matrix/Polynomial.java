@@ -36,7 +36,6 @@ public class Polynomial {
      *
      * @param first  первый слагаемый полином
      * @param second второй слогаемый полином
-     *
      * @return результат сложения полиномов в виде ещё одного полинома
      */
     static Node add(Node first, Node second) {
@@ -75,25 +74,55 @@ public class Polynomial {
     }
 
     /**
+     * Метод вычитания двух полиномов.
+     *
+     * @param first  полином, из которого вычитаем
+     * @param second вычитаемый полином
+     * @return результат вычитания полиномов в виде ещё одного полинома
+     */
+    static Node sub(Node first, Node second) {
+        return add(first, mul(-1, second));
+    }
+
+    /**
      * Метод умножения полиномов.
      *
      * @param first  первый умножаемый полином
      * @param second второй умножаемый полином
-     *
      * @return результат умножения полиномов в виде ещё одного полинома
      */
     static Node mul(Node first, Node second) {
-        Node tmpNode = new Node();
-        Node result = tmpNode;
+        Node result = null, working = null;
 
         while (first != null) {
-            while (second != null) {
-                double newValue = first.value * second.value;
-                int newPower = first.power + second.power;
-                Position pos = findPosition(result, newPower);
-                //TODO Придумать как реализовать, сейчас соображалка не работает
+            Node secondWorking = second;
+            while (secondWorking != null) {
+                Node tmpNode = new Node(first.value * secondWorking.value,
+                        first.power + secondWorking.power);
 
-                second = second.next;
+                if (working == null) {
+                    result = tmpNode;
+                    working = result;
+                } else {
+                    if (tmpNode.power > working.power) {
+                        Node anotherWorking = result;
+                        while (anotherWorking.next.power > tmpNode.power) anotherWorking = anotherWorking.next;
+                        if (tmpNode.power == anotherWorking.next.power) anotherWorking.next.value += tmpNode.value;
+                        else {
+                            tmpNode.next = anotherWorking.next;
+                            anotherWorking.next = tmpNode;
+                        }
+                    }
+                    if (tmpNode.power == working.power) {
+                        working.value += tmpNode.value;
+                    }
+                    if (tmpNode.power < working.power) {
+                        working.next = tmpNode;
+                        working = tmpNode;
+                    }
+                }
+
+                secondWorking = secondWorking.next;
             }
 
             first = first.next;
@@ -107,88 +136,52 @@ public class Polynomial {
      *
      * @param value   число, на которое нужно умножить полином
      * @param polinom умножаемый полином
-     *
      * @return результат умножения полинома и числа в виде ещё одного полинома
      */
     static Node mul(double value, Node polinom) {
         return mul(new Node(value, 0), polinom);
     }
 
-    static Position findPosition(Node polinom, int power) {
-        Node before = null, current = null;
-        while (polinom != null && polinom.next != null && polinom.next.power >= power) {
-            if (polinom.next.power == power) {
-                before = polinom;
-                current = polinom.next;
-                break;
-            } else before = polinom;
-            polinom = polinom.next;
-        }
-
-        return new Position(before, current);
-    }
-
-    Node findPower(int power) {
-        Node node = first;
-        if (node.power == power) return node;
-        if (node.next != null) node = node.next;
-        else return null;
-        return findPower(power);
-    }
-
     /**
      * Прочитать полиномы из файла
      *
      * @param path путь до файла
-     *
      * @throws FileNotFoundException если невозможно прочитать файл
      */
     private void readFromFile(final String path) throws FileNotFoundException {
         File inFile = new File(path);
         Scanner scanner = new Scanner(inFile);
-        Pattern pattern = Pattern.compile("[ \t]+");
-        first = readPolynomial(pattern.split(scanner.nextLine()));
-        second = readPolynomial(pattern.split(scanner.nextLine()));
+        first = readPolynomial(scanner.nextLine());
+        second = readPolynomial(scanner.nextLine());
     }
 
     /**
      * Прочитать полином из файла и занести в объект класса {@link Node}.
      *
-     * @param strings полином в виде строки
-     *
+     * @param polynomial полином в виде строки
      * @return заполненный полином в виде связного списка
      */
-    private Node readPolynomial(String[] strings) {
-        Node head = new Node();
-        Node node = head;
-        for (int i = strings.length - 1, j = 0; i >= 0 && j < strings.length; i--, j++) {
-            head.value = Double.parseDouble(strings[j].replace(',', '.'));
-            head.power = i;
-            head.next = new Node();
-            Node old = head;
-            head = head.next;
-            head.prev = old;
+    private Node readPolynomial(String polynomial) {
+        Pattern pattern = Pattern.compile("[ \t]+");
+        String[] values = pattern.split(polynomial);
+        Node result = null, working = null;
+        for (int i = values.length - 1, j = 0; i >= 0 && j < values.length; i--, j++) {
+            Node tmpNode = new Node(Double.parseDouble(values[j].replace(',', '.')), i);
+            if (working == null) {
+                result = tmpNode;
+                working = result;
+            } else {
+                working.next = tmpNode;
+                working = tmpNode;
+            }
         }
-        head = head.prev;
-        head.next = null;
-        return node;
-    }
-
-    static class Position {
-        Node before;
-        Node current;
-
-        public Position(Node before, Node current) {
-            this.before = before;
-            this.current = current;
-        }
+        return result;
     }
 
     static class Node {
         double value;
-        int    power;
-        Node   next;
-        Node   prev;
+        int power;
+        Node next;
 
         Node() {
         }
