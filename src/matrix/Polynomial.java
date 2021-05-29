@@ -1,21 +1,12 @@
 package matrix;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class Polynomial {
-    Node first;
-    Node second;
+    Node polynomial;
 
-    Polynomial(final String path) throws FileNotFoundException {
-        readFromFile(path);
-    }
-
-    public Polynomial(Node first, Node second) {
-        this.first = first;
-        this.second = second;
+    private Polynomial(Node polynomial) {
+        this.polynomial = polynomial;
     }
 
     /**
@@ -36,6 +27,7 @@ public class Polynomial {
      *
      * @param first  первый слагаемый полином
      * @param second второй слогаемый полином
+     *
      * @return результат сложения полиномов в виде ещё одного полинома
      */
     static Node add(Node first, Node second) {
@@ -78,6 +70,7 @@ public class Polynomial {
      *
      * @param first  полином, из которого вычитаем
      * @param second вычитаемый полином
+     *
      * @return результат вычитания полиномов в виде ещё одного полинома
      */
     static Node sub(Node first, Node second) {
@@ -89,6 +82,7 @@ public class Polynomial {
      *
      * @param first  первый умножаемый полином
      * @param second второй умножаемый полином
+     *
      * @return результат умножения полиномов в виде ещё одного полинома
      */
     static Node mul(Node first, Node second) {
@@ -97,8 +91,7 @@ public class Polynomial {
         while (first != null) {
             Node secondWorking = second;
             while (secondWorking != null) {
-                Node tmpNode = new Node(first.value * secondWorking.value,
-                        first.power + secondWorking.power);
+                Node tmpNode = new Node(first.value * secondWorking.value, first.power + secondWorking.power);
 
                 if (working == null) {
                     result = tmpNode;
@@ -136,6 +129,7 @@ public class Polynomial {
      *
      * @param value   число, на которое нужно умножить полином
      * @param polinom умножаемый полином
+     *
      * @return результат умножения полинома и числа в виде ещё одного полинома
      */
     static Node mul(double value, Node polinom) {
@@ -143,25 +137,13 @@ public class Polynomial {
     }
 
     /**
-     * Прочитать полиномы из файла
-     *
-     * @param path путь до файла
-     * @throws FileNotFoundException если невозможно прочитать файл
-     */
-    private void readFromFile(final String path) throws FileNotFoundException {
-        File inFile = new File(path);
-        Scanner scanner = new Scanner(inFile);
-        first = readPolynomial(scanner.nextLine());
-        second = readPolynomial(scanner.nextLine());
-    }
-
-    /**
      * Прочитать полином из файла и занести в объект класса {@link Node}.
      *
      * @param polynomial полином в виде строки
+     *
      * @return заполненный полином в виде связного списка
      */
-    private Node readPolynomial(String polynomial) {
+    public static Polynomial readPolynomial(String polynomial) {
         Pattern pattern = Pattern.compile("[ \t]+");
         String[] values = pattern.split(polynomial);
         Node result = null, working = null;
@@ -175,13 +157,27 @@ public class Polynomial {
                 working = tmpNode;
             }
         }
-        return result;
+        return new Polynomial(result);
+    }
+
+    /**
+     * Добавить мономер к полиному.
+     *
+     * @param value значение мономера
+     * @param power степень мономера
+     *
+     * @return изменённый полином
+     */
+    public Polynomial addMonomer(double value, int power) {
+        polynomial = add(polynomial, new Node(value, power));
+
+        return this;
     }
 
     static class Node {
         double value;
-        int power;
-        Node next;
+        int    power;
+        Node   next;
 
         Node() {
         }

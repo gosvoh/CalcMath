@@ -2,7 +2,10 @@ package matrix;
 
 import utils.MatrixUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
@@ -45,12 +48,16 @@ public class MatrixMain {
             }
 
             if (outputFilePath != null) MatrixUtils.printToFile(outputFilePath, matrix.getMatrix());*/
+            Scanner scanner = new Scanner(new File(inputFilePath));
+            Polynomial first = Polynomial.readPolynomial(scanner.nextLine());
+            Polynomial second = Polynomial.readPolynomial(scanner.nextLine());
 
-            Polynomial polynomial = new Polynomial(inputFilePath);
-            Polynomial.print(polynomial.first);
-            Polynomial.print(polynomial.second);
-            Polynomial.print(Polynomial.mul(polynomial.first, polynomial.second));
-        } catch (IOException | IllegalArgumentException e) {
+            second.addMonomer(1, 3);
+
+            Polynomial.print(first.polynomial);
+            Polynomial.print(second.polynomial);
+            Polynomial.print(Polynomial.add(first.polynomial, second.polynomial));
+        } catch (IllegalArgumentException | FileNotFoundException e) {
             e.printStackTrace();
         }
     }
