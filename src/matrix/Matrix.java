@@ -215,13 +215,17 @@ public class Matrix {
             }
             if (counter != 4) return false;
         }
+        System.out.println("Дус выполняется полностью, решаем без проверки...");
         calcWithoutControl(0, initApproximations);
 
         return true;
     }
 
     private void calcWithoutControl(int i, double[] initApproximations) {
-        for (; i < maxIterations; i++) if (isZero(calculateNewApproximations(initApproximations))) break;
+        for (; i < maxIterations; i++) {
+            System.out.printf("Итерация %3d) ", i + 1);
+            if (isZero(calculateNewApproximations(initApproximations))) break;
+        }
         System.out.printf("Приближения на %d итерации:\n", i);
         MatrixUtils.print(initApproximations);
         System.out.println();
@@ -240,8 +244,10 @@ public class Matrix {
             approximations[i] = matrix[i][size];
             for (int j = 0; j < size; j++) if (i != j) approximations[i] -= matrix[i][j] * approximations[j];
             approximations[i] /= matrix[i][i];
+            System.out.printf("%15.6E ", approximations[i]);
             max = Math.max(Math.abs(approximations[i] - approx), Math.abs(max));
         }
+        System.out.println();
         return max;
     }
 
