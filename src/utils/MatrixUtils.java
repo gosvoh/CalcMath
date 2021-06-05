@@ -52,18 +52,6 @@ public class MatrixUtils {
     }
 
     /**
-     * Вывести указанную матрицу на экран.
-     *
-     * @param matrix матрица для вывода
-     */
-    public static void print(final double[][] matrix) {
-        for (double[] doubles : matrix) {
-            for (double aDouble : doubles) System.out.printf("%15.6E", aDouble);
-            System.out.println();
-        }
-    }
-
-    /**
      * Поменять местами указанные строки в указанной матрице.
      *
      * @param matrix матрица для замены строк
@@ -76,16 +64,28 @@ public class MatrixUtils {
         matrix[line2] = tmpLine;
     }
 
-    public static void swapLines(double[] array, final int line1, final int line2) {
-        double tmpLine = array[line1];
-        array[line1] = array[line2];
-        array[line2] = tmpLine;
-    }
-
+    /**
+     * Поменять местами указанные строки в указанном массиве.
+     *
+     * @param array массив для замены строк
+     * @param line1  первая строка для обмена
+     * @param line2  вторая строка для обмена
+     */
     public static void swapLines(int[] array, final int line1, final int line2) {
         int tmpLine = array[line1];
         array[line1] = array[line2];
         array[line2] = tmpLine;
+    }
+
+    /**
+     * Проверка числа на условный ноль.
+     *
+     * @param value число для проверки
+     *
+     * @return true, если |value| < quality
+     */
+    public static boolean isZero(final double value, final double quality) {
+        return Math.abs(value) <= quality;
     }
 
     /**
