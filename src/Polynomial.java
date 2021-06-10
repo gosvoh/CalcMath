@@ -1,5 +1,3 @@
-package matrix;
-
 import java.util.regex.Pattern;
 
 public class Polynomial {
@@ -9,6 +7,10 @@ public class Polynomial {
         this.polynomial = polynomial;
     }
 
+    public Polynomial(double value, int power) {
+        polynomial = new Node(value, power);
+    }
+
     /**
      * Вывести указанный полином на экран.
      *
@@ -16,7 +18,7 @@ public class Polynomial {
      */
     static void print(Node node) {
         while (node != null) {
-            System.out.print(node.value + " ");
+            System.out.printf("%f*x^%d\n", node.value, node.power);
             node = node.next;
         }
         System.out.println();
@@ -30,7 +32,7 @@ public class Polynomial {
      *
      * @return результат сложения полиномов в виде ещё одного полинома
      */
-    static Node add(Node first, Node second) {
+    static Node sum(Node first, Node second) {
         Node result = null, working = null;
         while (first != null || second != null) {
             boolean pickfirst = false;
@@ -42,7 +44,7 @@ public class Polynomial {
                 first = first.next;
                 second = second.next;
             } else {
-                pickfirst = first != null && (second == null || first.power > second.power);
+                pickfirst = first != null && (second == null || first.power < second.power);
 
                 if (pickfirst) {
                     tmpNode = new Node(first.value, first.power);
@@ -74,7 +76,7 @@ public class Polynomial {
      * @return результат вычитания полиномов в виде ещё одного полинома
      */
     static Node sub(Node first, Node second) {
-        return add(first, mul(-1, second));
+        return sum(first, mul(-1, second));
     }
 
     /**
@@ -97,9 +99,9 @@ public class Polynomial {
                     result = tmpNode;
                     working = result;
                 } else {
-                    if (tmpNode.power > working.power) {
+                    if (tmpNode.power < working.power) {
                         Node anotherWorking = result;
-                        while (anotherWorking.next.power > tmpNode.power) anotherWorking = anotherWorking.next;
+                        while (anotherWorking.next.power < tmpNode.power) anotherWorking = anotherWorking.next;
                         if (tmpNode.power == anotherWorking.next.power) anotherWorking.next.value += tmpNode.value;
                         else {
                             tmpNode.next = anotherWorking.next;
@@ -109,7 +111,7 @@ public class Polynomial {
                     if (tmpNode.power == working.power) {
                         working.value += tmpNode.value;
                     }
-                    if (tmpNode.power < working.power) {
+                    if (tmpNode.power > working.power) {
                         working.next = tmpNode;
                         working = tmpNode;
                     }
@@ -136,6 +138,19 @@ public class Polynomial {
         return mul(new Node(value, 0), polinom);
     }
 
+    static Node div(double value, Node polynomial) {
+        Node res = null;
+
+        while (polynomial != null) {
+            Node tmp = new Node(polynomial.value / value, polynomial.power);
+            if (res == null) res = tmp;
+            else res = sum(res, tmp);
+            polynomial = polynomial.next;
+        }
+
+        return res;
+    }
+
     /**
      * Прочитать полином из файла и занести в объект класса {@link Node}.
      *
@@ -147,8 +162,8 @@ public class Polynomial {
         Pattern pattern = Pattern.compile("[ \t]+");
         String[] values = pattern.split(polynomial);
         Node result = null, working = null;
-        for (int i = values.length - 1, j = 0; i >= 0 && j < values.length; i--, j++) {
-            Node tmpNode = new Node(Double.parseDouble(values[j].replace(',', '.')), i);
+        for (int i = 0; i < values.length; i++) {
+            Node tmpNode = new Node(Double.parseDouble(values[i].replace(',', '.')), i);
             if (working == null) {
                 result = tmpNode;
                 working = result;
@@ -160,6 +175,58 @@ public class Polynomial {
         return new Polynomial(result);
     }
 
+    public static Node getLagrangeSolution(double startingValue, double endValue, int numberOfSteps) {
+        double interpolationStep = (endValue - startingValue) / (numberOfSteps - 1);
+        //double[] x = {0, 1, 2, 3};
+        //double[] y = {-2, -5, 0, -4};
+        double[] x = new double[numberOfSteps];
+        double[] y = new double[numberOfSteps];
+        for (int i = 0; i < numberOfSteps; i++) {
+            x[i] = startingValue + i * interpolationStep;
+            y[i] = getFunctionValue(x[i]);
+        }
+        for (int i = 0; i < numberOfSteps; i++) x[i] = i * interpolationStep;
+
+        Node result = null;
+        Node main = new Node(1, 1);
+        for (int i = 0; i < numberOfSteps; i++) {
+            Node working = null;
+            Node workingDelim = null;
+            Node delimMain = new Node(x[i], 0);
+            for (int j = 0; j < numberOfSteps; j++) {
+                if (i == j) continue;
+                Node tmp1 = sum(main, new Node(-x[j], 0));
+                Node tmp2 = sum(delimMain, new Node(-x[j], 0));
+
+                if (working == null) {
+                    working = tmp1;
+                    workingDelim = tmp2;
+                } else {
+                    working = mul(working, tmp1);
+                    workingDelim = mul(workingDelim, tmp2);
+                }
+            }
+            working = div(workingDelim.value, working);
+            working = mul(y[i], working);
+
+            if (result == null) result = working;
+            else result = sum(result, working);
+        }
+
+        int i = 0;
+        while (result != null) {
+            System.out.printf("%f%15.6E%15.6E\n", x[i], y[i], result.value);
+            i++;
+            result = result.next;
+        }
+
+        return result;
+    }
+
+    public static double getFunctionValue(double x) {
+        return Math.log(x) + Math.sqrt(1 + x);
+    }
+
     /**
      * Добавить мономер к полиному.
      *
@@ -169,7 +236,7 @@ public class Polynomial {
      * @return изменённый полином
      */
     public Polynomial addMonomer(double value, int power) {
-        polynomial = add(polynomial, new Node(value, power));
+        polynomial = sum(polynomial, new Node(value, power));
 
         return this;
     }
@@ -185,6 +252,10 @@ public class Polynomial {
         Node(double value, int power) {
             this.value = value;
             this.power = power;
+        }
+
+        void setValue(double value) {
+            this.value = value;
         }
     }
 }
