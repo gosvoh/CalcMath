@@ -9,9 +9,11 @@ public class SeidelSolution extends Matrix {
     /**
      * Максимальное количество итераций для решения с контролем
      */
-    private final int   MAX_CONTROL_ITERATIONS = 10;
+    private final int      MAX_CONTROL_ITERATIONS = 10;
     /** Массив индексов строк матрицы {@link #matrix} */
-    private       int[] shortMatrix;
+    private       int[]    shortMatrix;
+    /** Массив сумм строк матрицы {@link #matrix} */
+    private       double[] lineSums;
 
     public SeidelSolution(Matrix matrixObj) {
         this.matrix = new double[matrixObj.matrix.length][matrixObj.matrix[0].length];
@@ -39,12 +41,10 @@ public class SeidelSolution extends Matrix {
         shortMatrix = new int[matrix.length];
         for (int i = 0; i < shortMatrix.length; i++) shortMatrix[i] = i;
 
-        int tmp = checkMatrix(MatrixUtils.getAbsLinesSumsWithoutLast(matrix));
-        if (tmp == 2) return false;
-
-        double[][] tempMatrix = matrix.clone();
-        for (int i = 0; i < matrix.length; i++) matrix[i] = tempMatrix[shortMatrix[i]];
-        System.out.println(this);
+        lineSums = MatrixUtils.getAbsLinesSumsWithoutLast(matrix);
+        int tmp = checkMatrix();
+        System.out.println("Изменённая матрица:\n" + this);
+        if ((tmp & 2) == 2) return false;
 
         int counter = 0;
         int i = 0;
@@ -54,7 +54,7 @@ public class SeidelSolution extends Matrix {
             double max = calculateNewApproximations(initApproximations);
             for (; i < MAX_CONTROL_ITERATIONS; i++) {
                 double temp = calculateNewApproximations(initApproximations);
-                if (max >= temp || (max - temp) < quality) {
+                if (max >= temp || Math.abs(max - temp) < quality) {
                     max = temp;
                     counter++;
                     if (MatrixUtils.isZero(max, quality) || counter == 4) break;
@@ -100,64 +100,78 @@ public class SeidelSolution extends Matrix {
      * <p> <b>1</b> если ДУС выполняется частично </p>
      * <p> <b>2</b> если ДУС не выполняется </p>
      */
-    private int checkMatrix(double[] lineSums) {
-        boolean DUS = false;
+    public int checkMatrix() {
+        if (checkOnZero(shortMatrix)) {
+            boolean condition = findBestIndexes();
+            compileMatrix();
+            return condition ? 0 : 2;
+        }
+        if (SCC(shortMatrix)) return 2;
+        else return 1;
+    }
 
+    /**
+     * Попытаться найти лучшую перестановку индексов строк.<p>
+     * Используется реализация алгоритма <b><nobr>std::nex_permutation</nobr></b> на Java
+     *
+     * @return True если найдена, в противном случае false.
+     */
+    private boolean findBestIndexes() {
+        boolean found = false;
+        int[] temp = new int[size];
+        for (int i = 0; i < temp.length; i++) temp[i] = i;
+
+        do {
+            if (SCC(temp)) {
+                System.arraycopy(temp, 0, shortMatrix, 0, temp.length);
+                return true;
+            }
+            if (!found && !checkOnZero(temp)) {
+                found = true;
+                System.arraycopy(temp, 0, shortMatrix, 0, temp.length);
+            }
+        } while (MatrixUtils.nextPermutation(temp));
+
+        return found;
+    }
+
+    /**
+     * Преобразовать матрицу в соответствии с индексами короткой матрицы {@link #shortMatrix}
+     */
+    private void compileMatrix() {
+        double[][] tempMatrix = matrix.clone();
+        for (int i = 0; i < matrix.length; i++) matrix[i] = tempMatrix[shortMatrix[i]];
+    }
+
+    /**
+     * Проверка матрицы на ДУС.
+     *
+     * @param indexes Массив индексов строк.
+     *
+     * @return True, если ДУС выполняется, в противном случае false.
+     */
+    private boolean SCC(int[] indexes) {
+        int check = 0;
         for (int i = 0; i < size; i++) {
-            if (MatrixUtils.isZero(matrix[shortMatrix[i]][i], quality)) {
-                int nonNullRow = findNonNullElementInColumn(i);
-                if (nonNullRow == -1) return 2;
-                MatrixUtils.swapLines(shortMatrix, i, nonNullRow);
-            }
-
-            if (Math.abs(matrix[shortMatrix[i]][i]) > (lineSums[shortMatrix[i]] - Math.abs(matrix[shortMatrix[i]][i])))
-                DUS = true;
-
-            if (Math.abs(matrix[shortMatrix[i]][i]) < (lineSums[shortMatrix[i]] - Math.abs(matrix[shortMatrix[i]][i]))) {
-                int tmp = getMaxDifferenceIndex(lineSums, shortMatrix[i]);
-                if (tmp == -1) return 2;
-                MatrixUtils.swapLines(shortMatrix, i, tmp);
-                DUS = checkMatrix(lineSums) == 0 || DUS;
+            if (lineSums[indexes[i]] > 2 * Math.abs(matrix[indexes[i]][i])) return false;
+            if (lineSums[indexes[i]] == 2 * Math.abs(matrix[indexes[i]][i])) {
+                if (check != size - 1) check++;
+                else return false;
             }
         }
-
-        return DUS ? 0 : 1;
+        return true;
     }
 
     /**
-     * Найти ненулевой элемент в указанном столбце, начиная со следующей строки.
+     * Проверить диагональ матрицы на нули.
      *
-     * @param currentColumn столбец для поиска
+     * @param indexes Массив индексов строк.
      *
-     * @return индекс элемента, если он не найден, то -1
+     * @return False если нули не обнаружены, в противном случае true.
      */
-    private int findNonNullElementInColumn(int currentColumn) {
-        for (int i = currentColumn + 1; i < size; i++)
-            if (!MatrixUtils.isZero(matrix[i][currentColumn], quality)) return i;
-        return -1;
-    }
-
-    /**
-     * Получить индекс строки, который больше всего подходит указанной строке. Пример:<br>
-     * Если строка выглядит следующим образом - [5 2 0 -2] с индексом 1,
-     * то наиболее подходящая позиция для неё - 0, так как индекс наибольшего элемента - 0.
-     *
-     * @param lineSums сумма строк
-     * @param line     текущая строка для поиска индекса
-     *
-     * @return наилучший индекс
-     */
-    private int getMaxDifferenceIndex(double[] lineSums, int line) {
-        double maxDiff = lineSums[line] - Math.abs(matrix[line][line]);
-        int maxDiffIndex = -1;
-        for (int j = 0; j < size; j++) {
-            double tmp = lineSums[line] - Math.abs(matrix[line][j]);
-            if (tmp < maxDiff) {
-                maxDiff = tmp;
-                maxDiffIndex = j;
-            }
-        }
-        return maxDiffIndex;
+    private boolean checkOnZero(int[] indexes) {
+        for (int i = 0; i < size; i++) if (MatrixUtils.isZero(matrix[indexes[i]][i], quality)) return true;
+        return false;
     }
 
     /**

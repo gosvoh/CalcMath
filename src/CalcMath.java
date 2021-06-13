@@ -5,7 +5,7 @@ import matrix.SeidelSolution;
 import java.io.FileNotFoundException;
 import java.util.regex.Pattern;
 
-public class Main {
+public class CalcMath {
     public static void main(String[] args) {
         if (args.length < 1) {
             printHelp();

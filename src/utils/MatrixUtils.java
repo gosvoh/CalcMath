@@ -58,7 +58,7 @@ public class MatrixUtils {
      * @param line1  первая строка для обмена
      * @param line2  вторая строка для обмена
      */
-    public static void swapLines(double[][] matrix, final int line1, final int line2) {
+    public static void swap(double[][] matrix, final int line1, final int line2) {
         double[] tmpLine = matrix[line1];
         matrix[line1] = matrix[line2];
         matrix[line2] = tmpLine;
@@ -68,13 +68,52 @@ public class MatrixUtils {
      * Поменять местами указанные строки в указанном массиве.
      *
      * @param array массив для замены строк
-     * @param line1  первая строка для обмена
-     * @param line2  вторая строка для обмена
+     * @param line1 первая строка для обмена
+     * @param line2 вторая строка для обмена
      */
-    public static void swapLines(int[] array, final int line1, final int line2) {
+    public static void swap(int[] array, final int line1, final int line2) {
         int tmpLine = array[line1];
         array[line1] = array[line2];
         array[line2] = tmpLine;
+    }
+
+    /**
+     * Permute range into the next "dictionary" ordering.<p>
+     * Treats all permutations of the range as a set of "dictionary" sorted
+     * sequences.  Permutes the current sequence into the next one of this set.
+     * Returns true if there are more sequences to generate.  If the sequence
+     * is the largest of the set, the smallest is generated and false returned.
+     *
+     * @param array array to permute.
+     *
+     * @return False if wrapped to first permutation, true otherwise.
+     */
+    public static boolean nextPermutation(int[] array) {
+        int len = array.length;
+        int i = len - 1;
+
+        while (i > 0) {
+            if (array[i - 1] < array[i]) break;
+            i--;
+        }
+
+        if (i <= 0) return false;
+
+        int j = len - 1;
+        while (j >= i) {
+            if (array[i - 1] < array[j]) break;
+            j--;
+        }
+
+        MatrixUtils.swap(array, i - 1, j);
+
+        len--;
+        while (i < len) {
+            MatrixUtils.swap(array, i, len);
+            len--;
+            i++;
+        }
+        return true;
     }
 
     /**

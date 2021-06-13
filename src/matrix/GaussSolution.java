@@ -27,7 +27,7 @@ public class GaussSolution extends Matrix {
         for (int k = 0; k < size; k++) {
             if (MatrixUtils.isZero(matrix[k][k], quality)) {
                 int nonNull = findNonNullElementInColumn(k);
-                if ((nonNull != -1)) MatrixUtils.swapLines(matrix, k, nonNull);
+                if ((nonNull != -1)) MatrixUtils.swap(matrix, k, nonNull);
                 else return 1;
             }
 
