@@ -15,7 +15,7 @@ public class MatrixUtils {
      * @param array массив для вывода
      */
     public static void print(final double[] array) {
-        for (double v : array) System.out.printf("%15.6E", v);
+        for (double v : array) System.out.printf("%.6E ", v);
         System.out.println();
     }
 
@@ -192,7 +192,7 @@ public class MatrixUtils {
         fileWriter.write(matrix.length + " " + matrix[0].length + "\n");
         for (double[] doubles : matrix) {
             for (double aDouble : doubles)
-                fileWriter.write(String.format("%15.6E", aDouble).replace(',', '.'));
+                fileWriter.write(String.format("%.6E ", aDouble).replace(',', '.'));
             fileWriter.write("\n");
         }
         fileWriter.close();
