@@ -46,7 +46,7 @@ public class CalcMath {
     }
 
     private static void printHelp() {
-        System.out.println("Usage:\n" + "matrix -h[elp]\n" + "matrix <input file path>\n" + "Structure of input file:\n" + "* First number \t\t- height of matrix\n" + "* Second number \t- length of matrix\n" + "* Third number \t\t- quality of zero (for Gauss method)\n" + "* Fourth number \t- maximum number of iterations (for Iterative method)\n");
+        System.out.println("Usage:\n" + "CalcMath -h[elp]\t- print this message\n" + "CalcMath pol\t\t- run polynomial methods" + "CalcMath <input file path>\n" + "Structure of input file:\n" + "* First number \t\t- height of matrix\n" + "* Second number \t- length of matrix\n" + "* Third number \t\t- quality of zero (for Gauss method)\n" + "* Fourth number \t- maximum number of iterations (for Iterative method)\n");
     }
 
     private static void runMatrixMethods(String[] args) {
